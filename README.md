@@ -1,5 +1,7 @@
 # BDO-Launcher
 
+![Image text](https://github.com/canplay/BDO-Launcher/blob/master/preview.png)
+
 WIP
 
 Build:
