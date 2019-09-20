@@ -1,0 +1,39 @@
+{
+    "news": [
+        {
+            "title": "test new 1",
+            "icon": "bluetooth",
+            "href": "http://www.baidu.com"
+        },
+        {
+            "title": "test new 2",
+            "icon": "bluetooth",
+            "href": "http://www.baidu.com"
+        },
+        {
+            "title": "test new 3",
+            "icon": "bluetooth",
+            "href": "http://www.baidu.com"
+        }
+    ],
+    "banner": [
+        {
+            "title": "test 1",
+            "img": "http://img.kuai8.com/attaches/news/image/20170721/20170721144812_26064.jpg",
+            "href": "http://www.baidu.com"
+        },
+        {
+            "title": "test 2",
+            "img": "http://s1.pearlcdn.com/Upload/Community/ecce4e8d47220180428001515606.jpg",
+            "href": "http://www.baidu.com"
+        },
+        {
+            "title": "test 3",
+            "img": "http://s1.pearlcdn.com/Upload/WALLPAPER/d5e8846471920170327181306477.jpg",
+            "href": "http://www.baidu.com"
+        }
+    ],
+    "update": "http://www.example.com/update.json",
+    "version": "1.0.1",
+    "server": "127.0.0.1"
+}
