@@ -1,7 +1,1 @@
-{
-    "user": "",
-    "pwd": "",
-    "autoStart": false,
-    "autoLogin": false,
-    "remember": false
-}
+{"user":"","pwd":"","autostart":false,"autologin":false,"remember":false,"launcher":"http://127.0.0.1/launcher.json"}

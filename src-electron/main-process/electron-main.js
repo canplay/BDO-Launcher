@@ -70,7 +70,7 @@ function createWindow() {
   log.transports.console.level = "error, warn, info, verbose, debug, silly";
   log.transports.file.level = "error, warn, info, verbose, debug, silly";
   log.transports.file.maxSize = 5 * 1024 * 1024;
-  log.transports.file.file = app.getAppPath() + "/log.txt";
+  log.transports.file.file = app.getAppPath() + "/log.log";
 
   mainWindow.loadURL(process.env.APP_URL + "?appurl=index");
 
@@ -103,7 +103,7 @@ function createWindow() {
     trayIcon.displayBalloon({
       title: packageJson.productName,
       icon: __statics + "/icon.png",
-      content: "Click the icon to display the program"
+      content: "Click the icon to display the Launcher"
     });
 
     mainWindow.hide();
@@ -235,6 +235,10 @@ ipcMain.on("newWindow", (event, arg1, arg2) => {
   });
 });
 
+ipcMain.on("log", (event, arg) => {
+  log.log(arg);
+});
+
 ipcMain.on("notify", (event, title, content) => {
   trayIcon.displayBalloon({
     title: title,
@@ -247,15 +251,6 @@ ipcMain.on("cookies", (event, url) => {
   session.defaultSession.cookies.get({ url: url }).then(cookies => {
     mainWindow.webContents.send("cookies", cookies);
   });
-});
-
-ipcMain.on("Inject", (event, url) => {
-  let addon;
-  if (process.env.DEV)
-    addon = require("../../addon/build/Release/addon");
-  else
-    addon = require("bindings")("addon");
-  log.log("addon.CheckAutoStart = " + addon.Inject(url));
 });
 
 async function addDir(path) {

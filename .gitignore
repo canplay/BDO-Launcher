@@ -19,3 +19,7 @@ yarn-error.log*
 *.njsproj
 *.sln
 /addon/build
+/Permission/output
+/Permission/temp
+/Bin
+/Permission/.vs

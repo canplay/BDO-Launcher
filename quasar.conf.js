@@ -189,7 +189,7 @@ module.exports = function(ctx) {
         // https://www.electron.build/configuration/configuration
 
         copyright: "CaNplay <canplay@vip.qq.com>",
-        appId: "org.canplay.oa.app",
+        appId: "org.canplay.bdolauncher.app",
         asar: false,
         files: [
           "!**/.vscode",
@@ -209,7 +209,7 @@ module.exports = function(ctx) {
           target: [
             {
               target: "dir",
-              arch: ["ia32"]
+              // arch: ["ia32"]
             }
           ]
         }

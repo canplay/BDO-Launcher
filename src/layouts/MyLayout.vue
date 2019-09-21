@@ -1,16 +1,9 @@
 <template>
   <q-layout>
-    <q-img
-      src="../statics/bg.png"
-      class="fixed-center fit"
-      style="z-index: -1"
-    />
+    <q-img src="statics/bg.png" class="fixed-center fit" style="z-index: -1" />
 
     <q-toolbar class="text-white q-electron-drag transprent">
-      <q-img
-        src="statics/icon.png"
-        style="width: 36px; height: 36px"
-      />&nbsp;&nbsp;
+      <q-img src="statics/icon.png" style="width: 36px; height: 36px" />&nbsp;&nbsp;
       <div class="text-black">
         <q-badge class="bg-accent">{{ title }} {{ version }}</q-badge>
       </div>
@@ -25,19 +18,14 @@
         icon="file_download"
         @click="download"
       >
-        <q-tooltip v-model="show_download" content-style="font-size: 12px">{{
+        <q-tooltip v-model="show_download" content-style="font-size: 12px">
+          {{
           download_tip
-        }}</q-tooltip>
+          }}
+        </q-tooltip>
       </q-btn>
 
-      <q-btn
-        v-if="appurl === 'index'"
-        dense
-        flat
-        color="black"
-        icon="settings"
-        @click="option"
-      >
+      <q-btn v-if="appurl === 'index'" dense flat color="black" icon="settings" @click="option">
         <q-tooltip content-style="font-size: 12px">Option</q-tooltip>
       </q-btn>
 
@@ -47,7 +35,7 @@
 
       <!-- <q-btn dense flat color="black" icon="crop_square" @click="maximize">
         <q-tooltip content-style="font-size: 12px">maximize</q-tooltip>
-      </q-btn> -->
+      </q-btn>-->
 
       <q-btn dense flat color="black" icon="close" @click="close">
         <q-tooltip content-style="font-size: 12px">Close</q-tooltip>
@@ -61,19 +49,14 @@
     <q-dialog v-model="dlg_option">
       <q-card>
         <q-card-section class="row items-center">
-          <q-form
-            ref="option"
-            @submit="onSubmit"
-            @reset="onReset"
-            class="q-gutter-md"
-          >
+          <div class="q-gutter-md">
             <q-input
               standout="bg-primary text-white"
               v-model="user"
-              label="Account"
+              label="Username"
               lazy-rules
               :rules="[
-                val => (val && val.length > 0) || 'Please enter account'
+                val => (val && val.length > 0) || 'Please enter username'
               ]"
             />
 
@@ -91,16 +74,10 @@
             <q-toggle v-model="remember" label="Keep Password" />
 
             <div class="text-center">
-              <q-btn class="fit" label="Save" type="submit" color="primary" />
-              <q-btn
-                class="fit"
-                label="Reset"
-                type="reset"
-                color="primary"
-                flat
-              />
+              <q-btn class="fit" label="Save" color="primary" @click="onSubmit" />
+              <q-btn class="fit" label="Reset" color="primary" flat @click="onReset" />
             </div>
-          </q-form>
+          </div>
         </q-card-section>
       </q-card>
     </q-dialog>
@@ -162,12 +139,12 @@ export default {
       dlg_alertInfo: "",
       download_tip: "Downloads",
       show_download: false,
-      url_prefix: "",
       user: "",
       pwd: "",
       autostart: false,
       autologin: false,
-      remember: false
+      remember: false,
+      launcher: ""
     };
   },
 
@@ -217,43 +194,41 @@ export default {
     },
 
     onSubmit() {
-      this.$refs.option.validate().then(success => {
-        if (success) {
-          this.$q.loading.show({
-            message: "<b>Saving Settings, please wait...</b>"
-          });
+        this.$q.loading.show({
+          message: "<b>Saving Settings, please wait...</b>"
+        });
 
-          let timer = window.setTimeout(() => {
-            this.$q.loading.hide();
-          }, 180000);
-
-          if (this.autostart) common.EnableAutoStart();
-          else common.DisableAutoStart();
-
-          common.SaveJson(
-            '{"user":"' +
-              base64.Base64.encode(this.oauser) +
-              '","pwd":"' +
-              base64.Base64.encode(this.oapwd) +
-              '",' +
-              '"autostart":' +
-              true +
-              ',"autologin":' +
-              false +
-              ',"remember":' +
-              (this.remember ? true : false) +
-              "}"
-          );
-
+        let timer = window.setTimeout(() => {
           this.$q.loading.hide();
-          window.clearTimeout(timer);
-        }
-      });
+        }, 180000);
+
+        if (this.autostart) common.EnableAutoStart();
+        else common.DisableAutoStart();
+
+        common.SaveJson(
+          '{"user":"' +
+            (this.remember ? base64.Base64.encode(this.user) : "") +
+            '","pwd":"' +
+            (this.remember ? base64.Base64.encode(this.pwd) : "") +
+            '","autostart":' +
+            false +
+            ',"autologin":' +
+            (this.autologin ? true : false) +
+            ',"remember":' +
+            (this.remember ? true : false) +
+            ',"launcher":"' +
+            this.launcher +
+            '"}',
+          "config.json"
+        );
+
+        this.$q.loading.hide();
+        window.clearTimeout(timer);
     },
 
     onReset() {
-      this.name = null;
-      this.pwd = null;
+      this.name = "";
+      this.pwd = "";
       this.autologin = false;
       this.autostart = false;
       this.remember = false;
@@ -265,21 +240,21 @@ export default {
     },
 
     download_start(arg) {
-      this.download_tip = "正在下载: " + arg;
+      this.download_tip = "Downloading: " + arg;
       this.show_download = true;
 
       self.setInterval(() => {
-        this.download_tip = "下载";
+        this.download_tip = "Download";
         this.show_download = false;
       }, 3000);
     },
 
     download_complete(arg) {
-      this.download_tip = "下载完成: " + arg;
+      this.download_tip = "Download completes: " + arg;
       this.show_download = true;
 
       self.setInterval(() => {
-        this.download_tip = "下载";
+        this.download_tip = "Download";
         this.show_download = false;
       }, 3000);
     }
@@ -301,6 +276,7 @@ export default {
     this.autostart = common.CheckAutoStart();
     this.autologin = json.autologin;
     this.remember = json.remember;
+    this.launcher = json.launcher;
 
     if (this.autostart) common.EnableAutoStart();
     else common.DisableAutoStart();

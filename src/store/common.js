@@ -5,7 +5,6 @@ import querystring from "querystring";
 import url_module from "url";
 import http from "http";
 import https from "https";
-import log from "electron-log";
 
 export default {
   uuid() {
@@ -74,12 +73,12 @@ export default {
           });
         }
 
-        callback != undefined && callback(_data, cookie);
+        callback != undefined && callback("success", _data, cookie);
       });
     });
 
-    req.on("error", () => {
-      callback != undefined && callback("error");
+    req.on("error", err => {
+      callback != undefined && callback("error", err);
     });
 
     req.write(content);
@@ -113,14 +112,16 @@ export default {
   },
 
   GetJson(file) {
+    if (!fileStream.existsSync(file))
+      file = this.$q.electron.remote.app.getAppPath() + "/" + file;
     return JSON.parse(fileStream.readFileSync(file).toString());
   },
 
   SaveJson(data, file) {
-    let json = JSON.stringify(data.toString());
-
-    fileStream.writeFile(file, json, err => {
-      if (err) log.log(err);
+    if (!fileStream.existsSync(file))
+      file = this.$q.electron.remote.app.getAppPath() + "/" + file;
+    fileStream.writeFile(file, data, err => {
+      if (err) this.ipc("log", err);
     });
   },
 
@@ -156,6 +157,27 @@ export default {
         'Permission.exe DisableAutoStartShotcut "' +
           electron.remote.app.getAppPath() +
           '/../../../BDO Launcher.exe" BDO Launcher.lnk',
+        {
+          cwd: electron.remote.app.getAppPath(),
+          windowsHide: true
+        }
+      )
+      .on("exit", () => {
+        process.kill();
+      });
+  },
+
+  RunGame(dir, server, username, password) {
+    let process = cp
+      .exec(
+        'Permission.exe RunGame "' +
+          dir +
+          '" "' +
+          server +
+          '" ' +
+          username +
+          " " +
+          password,
         {
           cwd: electron.remote.app.getAppPath(),
           windowsHide: true

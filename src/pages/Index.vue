@@ -2,10 +2,10 @@
   <q-page :style="{ 'min-height': minHeight + 'px', height: minHeight + 'px' }">
     <div class="column">
       <div class="col text-center">
-        <q-img src="../statics/logo.png" style="width: 500px; height: 111px" />
+        <q-img src="statics/logo.png" style="width: 500px; height: 111px" />
       </div>
 
-      <div class="col" style="padding-top: 3%" />
+      <div class="col" style="padding-top: 2%" />
 
       <div class="col">
         <div class="row">
@@ -71,26 +71,32 @@
                   style="background-color: rgba(0, 0, 0, 0.5); width: 80%"
                 >
                   <q-card-section>
-                    <form
-                      @submit.prevent.stop="onSubmit"
-                      @reset.prevent.stop="onReset"
-                      class="q-gutter-md"
-                    >
+                    <div class="q-gutter-md">
                       <q-input
                         standout="bg-teal text-white"
-                        v-model="text"
+                        v-model="user"
                         label="Username"
                         dark
                         bg-color="black"
                         style="opacity: 0.5"
+                        lazy-rules
+                        :rules="[
+                          val =>
+                            (val && val.length > 0) || 'Please enter username'
+                        ]"
                       />
                       <q-input
                         standout="bg-teal text-white"
-                        v-model="text"
+                        v-model="pwd"
                         label="Password"
                         dark
                         bg-color="black"
                         style="opacity: 0.5"
+                        lazy-rules
+                        :rules="[
+                          val =>
+                            (val && val.length > 0) || 'Please enter password'
+                        ]"
                       />
 
                       <q-toggle
@@ -110,9 +116,10 @@
                           type="submit"
                           color="primary"
                           style="width: 50%"
+                          @click="onLogin"
                         />
                       </div>
-                    </form>
+                    </div>
                   </q-card-section>
                 </q-card>
               </div>
@@ -129,7 +136,6 @@
 <script>
 import common from "../store/common.js";
 import base64 from "js-base64";
-import fileStream from "fs";
 
 export default {
   name: "PageIndex",
@@ -139,13 +145,16 @@ export default {
       user: "",
       pwd: "",
       slide: 0,
-      text: "",
       autologin: false,
       remember: false,
+      launcher: "",
       logined: false,
       minHeight: 0,
       news: [],
-      banner: []
+      banner: [],
+      update: "",
+      version: "",
+      server: ""
     };
   },
 
@@ -162,38 +171,95 @@ export default {
 
     login() {},
 
-    onSubmit() {},
+    onLogin() {
+      if (this.user != "" && this.pwd != "") {
+        this.$q.loading.show({
+          message: "<b>Logining game, please wait...</b>"
+        });
 
-    onReset() {}
+        let timer = window.setTimeout(() => {
+          this.$q.loading.hide();
+        }, 180000);
+
+        common.SaveJson(
+          '{"user":"' +
+            (this.remember ? base64.Base64.encode(this.user) : "") +
+            '","pwd":"' +
+            (this.remember ? base64.Base64.encode(this.pwd) : "") +
+            '","autostart":' +
+            false +
+            ',"autologin":' +
+            (this.autologin ? true : false) +
+            ',"remember":' +
+            (this.remember ? true : false) +
+            ',"launcher":"' +
+            this.launcher +
+            '"}',
+          "config.json"
+        );
+
+        common.RunGame("E:/BDO_v795/bin64", this.server, this.user, this.pwd);
+
+        this.$q.loading.hide();
+        window.clearTimeout(timer);
+      }
+    }
   },
 
   created() {
     window.addEventListener("resize", this.onResize);
 
     let json = common.GetJson("config.json");
-    this.user = base64.Base64.decode(json.user);
-    this.pwd = base64.Base64.decode(json.pwd);
+    if (json.user != "") this.user = base64.Base64.decode(json.user);
+    if (json.pwd != "") this.pwd = base64.Base64.decode(json.pwd);
     this.autologin = json.autologin;
     this.remember = json.remember;
+    this.launcher = json.launcher;
 
-    // common.RequestURL("http://launcher.json", "", "", "GET", data => {
-    //   if (data != "error") {
-    //     data.banner.forEach(element => {
+    common.RequestURL(this.launcher, "", "", "GET", (status, data) => {
+      if (status == "success") {
+        json = JSON.parse(data.toString());
+        if (json) {
+          this.update = json.update;
+          this.version = json.version;
+          this.server = json.server;
 
-    //     });
-    //   }
-    // });
+          json.news.forEach(item => {
+            this.news.push({
+              title: item.title,
+              icon: item.icon,
+              href: item.href
+            });
+          });
 
-    json = JSON.parse(fileStream.readFileSync("launcher.json").toString());
-    if (json) {
-      json.news.forEach(item => {
-        this.news.push({ title: item.title, icon: item.icon, href: item.href });
-      });
+          json.banner.forEach(item => {
+            this.banner.push({
+              title: item.title,
+              img: item.img,
+              href: item.href
+            });
+          });
+        } else {
+          json.news.forEach(() => {
+            this.news.push({
+              title: "connect server error",
+              icon: "",
+              href: window.location.origin + "/404"
+            });
+          });
 
-      json.banner.forEach(item => {
-        this.banner.push({ title: item.title, img: item.img, href: item.href });
-      });
-    }
+          json.banner.forEach(() => {
+            this.banner.push({
+              title: "connect server error",
+              img: "",
+              href: window.location.origin + "/404"
+            });
+          });
+        }
+      } else {
+        console.log(data);
+      }
+    });
   },
 
   mounted() {

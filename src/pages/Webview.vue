@@ -41,7 +41,6 @@
 
 <script>
 import common from "../store/common.js";
-import log from "electron-log";
 import cp from "child_process";
 
 export default {
@@ -115,7 +114,7 @@ export default {
       switch (event.channel) {
         case "notify":
           common.ipc("notify", event.args[0], event.args[1]);
-          log.log("notify: " + event.args[1]);
+          this.ipc("log", "notify: " + event.args[1]);
           break;
       }
     },
