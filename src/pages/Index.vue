@@ -5,7 +5,7 @@
         <q-img src="statics/logo.png" style="width: 500px; height: 111px" />
       </div>
 
-      <div class="col" style="padding-top: 2%" />
+      <div class="col" style="padding-top: 3%" />
 
       <div class="col">
         <div class="row">
@@ -79,11 +79,6 @@
                         dark
                         bg-color="black"
                         style="opacity: 0.5"
-                        lazy-rules
-                        :rules="[
-                          val =>
-                            (val && val.length > 0) || 'Please enter username'
-                        ]"
                       />
                       <q-input
                         standout="bg-teal text-white"
@@ -92,11 +87,6 @@
                         dark
                         bg-color="black"
                         style="opacity: 0.5"
-                        lazy-rules
-                        :rules="[
-                          val =>
-                            (val && val.length > 0) || 'Please enter password'
-                        ]"
                       />
 
                       <q-toggle
@@ -113,7 +103,6 @@
                       <div class="text-center">
                         <q-btn
                           label="Login"
-                          type="submit"
                           color="primary"
                           style="width: 50%"
                           @click="onLogin"
@@ -147,6 +136,7 @@ export default {
       slide: 0,
       autologin: false,
       remember: false,
+      dir: "",
       launcher: "",
       logined: false,
       minHeight: 0,
@@ -167,42 +157,62 @@ export default {
       common.ipc("newWindow", url, "webview");
     },
 
-    fill() {},
-
     login() {},
 
     onLogin() {
-      if (this.user != "" && this.pwd != "") {
-        this.$q.loading.show({
-          message: "<b>Logining game, please wait...</b>"
-        });
-
-        let timer = window.setTimeout(() => {
-          this.$q.loading.hide();
-        }, 180000);
-
-        common.SaveJson(
-          '{"user":"' +
-            (this.remember ? base64.Base64.encode(this.user) : "") +
-            '","pwd":"' +
-            (this.remember ? base64.Base64.encode(this.pwd) : "") +
-            '","autostart":' +
-            false +
-            ',"autologin":' +
-            (this.autologin ? true : false) +
-            ',"remember":' +
-            (this.remember ? true : false) +
-            ',"launcher":"' +
-            this.launcher +
-            '"}',
-          "config.json"
-        );
-
-        common.RunGame("E:/BDO_v795/bin64", this.server, this.user, this.pwd);
-
-        this.$q.loading.hide();
-        window.clearTimeout(timer);
+      let json = common.GetJson("config.json");
+      this.dir = json.dir;
+      if (!this.dir || this.dir == "") {
+        this.$q.notify("Please configure the game directory");
+        return;
       }
+
+      if (!this.server || this.server == "") {
+        this.$q.notify("server is null");
+        return;
+      }
+
+      if (!this.user || this.user == "") {
+        this.$q.notify("Please enter username");
+        return;
+      }
+
+      if (!this.pwd || this.pwd == "") {
+        this.$q.notify("Please enter password");
+        return;
+      }
+
+      this.$q.loading.show({
+        message: "<b>Logining game, please wait...</b>"
+      });
+
+      let timer = window.setTimeout(() => {
+        this.$q.loading.hide();
+      }, 180000);
+
+      common.SaveJson(
+        '{"user":"' +
+          (this.remember ? base64.Base64.encode(this.user) : "") +
+          '","pwd":"' +
+          (this.remember ? base64.Base64.encode(this.pwd) : "") +
+          '","autostart":' +
+          false +
+          ',"autologin":' +
+          (this.autologin ? true : false) +
+          ',"remember":' +
+          (this.remember ? true : false) +
+          ',"dir":"' +
+          this.dir +
+          '","launcher":"' +
+          this.launcher +
+          '"}',
+        "config.json"
+      );
+
+      common.RunGame(this.dir, this.server, this.user, this.pwd);
+
+      this.$q.loading.hide();
+      window.clearTimeout(timer);
     }
   },
 
@@ -214,6 +224,7 @@ export default {
     if (json.pwd != "") this.pwd = base64.Base64.decode(json.pwd);
     this.autologin = json.autologin;
     this.remember = json.remember;
+    this.dir = json.dir;
     this.launcher = json.launcher;
 
     common.RequestURL(this.launcher, "", "", "GET", (status, data) => {
@@ -257,7 +268,17 @@ export default {
           });
         }
       } else {
-        console.log(data);
+        this.news.push({
+          title: "connect server error",
+          icon: "",
+          href: window.location.origin + "/404"
+        });
+
+        this.banner.push({
+          title: "connect server error",
+          img: "",
+          href: window.location.origin + "/404"
+        });
       }
     });
   },
@@ -267,8 +288,6 @@ export default {
 
     if (this.autologin) {
       if (!this.logined) this.login();
-    } else if (this.remember) {
-      this.fill();
     }
   },
 

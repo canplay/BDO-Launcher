@@ -3,7 +3,10 @@
     <q-img src="statics/bg.png" class="fixed-center fit" style="z-index: -1" />
 
     <q-toolbar class="text-white q-electron-drag transprent">
-      <q-img src="statics/icon.png" style="width: 36px; height: 36px" />&nbsp;&nbsp;
+      <q-img
+        src="statics/icon.png"
+        style="width: 36px; height: 36px"
+      />&nbsp;&nbsp;
       <div class="text-black">
         <q-badge class="bg-accent">{{ title }} {{ version }}</q-badge>
       </div>
@@ -19,13 +22,18 @@
         @click="download"
       >
         <q-tooltip v-model="show_download" content-style="font-size: 12px">
-          {{
-          download_tip
-          }}
+          {{ download_tip }}
         </q-tooltip>
       </q-btn>
 
-      <q-btn v-if="appurl === 'index'" dense flat color="black" icon="settings" @click="option">
+      <q-btn
+        v-if="appurl === 'index'"
+        dense
+        flat
+        color="black"
+        icon="settings"
+        @click="option"
+      >
         <q-tooltip content-style="font-size: 12px">Option</q-tooltip>
       </q-btn>
 
@@ -52,30 +60,34 @@
           <div class="q-gutter-md">
             <q-input
               standout="bg-primary text-white"
+              v-model="dir"
+              label="The game directory"
+            />
+
+            <q-input
+              standout="bg-primary text-white"
               v-model="user"
               label="Username"
-              lazy-rules
-              :rules="[
-                val => (val && val.length > 0) || 'Please enter username'
-              ]"
             />
 
             <q-input
               standout="bg-primary text-white"
               v-model="pwd"
               label="Password"
-              lazy-rules
-              :rules="[
-                val => (val && val.length > 0) || 'Please enter password'
-              ]"
             />
 
             <q-toggle v-model="autologin" label="Auto login" />
             <q-toggle v-model="remember" label="Keep Password" />
 
             <div class="text-center">
-              <q-btn class="fit" label="Save" color="primary" @click="onSubmit" />
-              <q-btn class="fit" label="Reset" color="primary" flat @click="onReset" />
+              <q-btn class="fit" label="Save" color="primary" @click="onSave" />
+              <q-btn
+                class="fit"
+                label="Reset"
+                color="primary"
+                flat
+                @click="onReset"
+              />
             </div>
           </div>
         </q-card-section>
@@ -144,6 +156,7 @@ export default {
       autostart: false,
       autologin: false,
       remember: false,
+      dir: "",
       launcher: ""
     };
   },
@@ -190,48 +203,71 @@ export default {
       this.autostart = common.CheckAutoStart();
       this.autologin = json.autologin;
       this.remember = json.remember;
+      this.dir = json.dir;
+      this.launcher = json.launcher;
       this.dlg_option = true;
     },
 
-    onSubmit() {
-        this.$q.loading.show({
-          message: "<b>Saving Settings, please wait...</b>"
-        });
+    onSave() {
+      if (!this.dir || this.dir == "") {
+        this.$q.notify("Please enter the game directory");
+        return;
+      }
 
-        let timer = window.setTimeout(() => {
-          this.$q.loading.hide();
-        }, 180000);
+      if (this.remember && !this.user && this.user == "") {
+        this.$q.notify("Please enter username");
+        return;
+      }
 
-        if (this.autostart) common.EnableAutoStart();
-        else common.DisableAutoStart();
+      if (this.remember && !this.pwd && this.pwd == "") {
+        this.$q.notify("Please enter password");
+        return;
+      }
 
-        common.SaveJson(
-          '{"user":"' +
-            (this.remember ? base64.Base64.encode(this.user) : "") +
-            '","pwd":"' +
-            (this.remember ? base64.Base64.encode(this.pwd) : "") +
-            '","autostart":' +
-            false +
-            ',"autologin":' +
-            (this.autologin ? true : false) +
-            ',"remember":' +
-            (this.remember ? true : false) +
-            ',"launcher":"' +
-            this.launcher +
-            '"}',
-          "config.json"
-        );
+      this.$q.loading.show({
+        message: "<b>Saving Settings, please wait...</b>"
+      });
 
+      let timer = window.setTimeout(() => {
         this.$q.loading.hide();
-        window.clearTimeout(timer);
+      }, 180000);
+
+      // if (this.autostart) common.EnableAutoStart();
+      // else common.DisableAutoStart();
+
+      this.dir = this.dir.replace(/\\/g, "/");
+
+      common.SaveJson(
+        '{"user":"' +
+          (this.remember ? base64.Base64.encode(this.user) : "") +
+          '","pwd":"' +
+          (this.remember ? base64.Base64.encode(this.pwd) : "") +
+          '","autostart":' +
+          false +
+          ',"autologin":' +
+          (this.autologin ? true : false) +
+          ',"remember":' +
+          (this.remember ? true : false) +
+          ',"dir":"' +
+          this.dir +
+          '","launcher":"' +
+          this.launcher +
+          '"}',
+        "config.json"
+      );
+
+      this.$q.loading.hide();
+      window.clearTimeout(timer);
     },
 
     onReset() {
-      this.name = "";
+      this.user = "";
       this.pwd = "";
       this.autologin = false;
       this.autostart = false;
       this.remember = false;
+      this.dir = "";
+      this.launcher = "";
     },
 
     alert(val) {
@@ -276,10 +312,11 @@ export default {
     this.autostart = common.CheckAutoStart();
     this.autologin = json.autologin;
     this.remember = json.remember;
+    this.dir = json.dir;
     this.launcher = json.launcher;
 
-    if (this.autostart) common.EnableAutoStart();
-    else common.DisableAutoStart();
+    // if (this.autostart) common.EnableAutoStart();
+    // else common.DisableAutoStart();
 
     this.$root.$on("download_start", this.download_start);
     this.$root.$on("download_complete", this.download_complete);

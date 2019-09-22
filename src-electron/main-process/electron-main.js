@@ -84,15 +84,6 @@ function createWindow() {
       .on("exit", () => {
         process.kill();
       });
-    
-    process = cp
-      .exec('Permission.exe Del "' + os.homedir() + '\\AppData\\Roaming\\' + packageJson.productName + '"', {
-        cwd: app.getAppPath(),
-        windowsHide: true
-      })
-      .on("exit", () => {
-        process.kill();
-      });
 
     delDir(app.getAppPath() + "/cached");
 
