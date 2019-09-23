@@ -1,1 +1,10 @@
-{"user":"","pwd":"","autostart":false,"autologin":false,"remember":true,"dir":"E:/BDO_v795/bin64","launcher":"http://127.0.0.1/launcher.json"}
+{
+    "user": "VXNlcm5hbWU=",
+    "pwd": "UGFzc3dvcmQ=",
+    "autostart": false,
+    "autologin": false,
+    "remember": true,
+    "version": "1.0.1",
+    "dir": "E:/BDO_v795/bin64",
+    "launcher": "http://60.160.237.49:81/launcher.json"
+}

@@ -44,7 +44,7 @@
                   navigation
                   infinite
                   autoplay
-                  class="text-white shadow-1"
+                  class="text-white shadow-1 bg-black"
                   style="width: 80%; height: 250px"
                 >
                   <q-carousel-slide
@@ -75,7 +75,7 @@
                       <q-input
                         standout="bg-teal text-white"
                         v-model="user"
-                        label="Username"
+                        :label=label_Username
                         dark
                         bg-color="black"
                         style="opacity: 0.5"
@@ -83,7 +83,7 @@
                       <q-input
                         standout="bg-teal text-white"
                         v-model="pwd"
-                        label="Password"
+                        :label=label_Password
                         dark
                         bg-color="black"
                         style="opacity: 0.5"
@@ -92,20 +92,21 @@
                       <q-toggle
                         class="text-white"
                         v-model="remember"
-                        label="Keep Password"
+                        :label=label_Remember
                       />
                       <q-toggle
                         class="text-white"
                         v-model="autologin"
-                        label="Auto login"
+                        :label=label_AutoLogin
                       />
 
                       <div class="text-center">
                         <q-btn
-                          label="Login"
+                          :label=label_Login
                           color="primary"
                           style="width: 50%"
                           @click="onLogin"
+                          ref="btnLogin"
                         />
                       </div>
                     </div>
@@ -144,7 +145,13 @@ export default {
       banner: [],
       update: "",
       version: "",
-      server: ""
+      server: "",
+      lang: "",
+      label_Username: "",
+      label_Password: "",
+      label_Remember: "",
+      label_AutoLogin: "",
+      label_Login: "",
     };
   },
 
@@ -163,31 +170,32 @@ export default {
       let json = common.GetJson("config.json");
       this.dir = json.dir;
       if (!this.dir || this.dir == "") {
-        this.$q.notify("Please configure the game directory");
+        this.$q.notify("请先设置游戏所在的目录");
         return;
       }
 
       if (!this.server || this.server == "") {
-        this.$q.notify("server is null");
+        this.$q.notify("连接服务器失败");
         return;
       }
 
       if (!this.user || this.user == "") {
-        this.$q.notify("Please enter username");
+        this.$q.notify("请输入用户名");
         return;
       }
 
       if (!this.pwd || this.pwd == "") {
-        this.$q.notify("Please enter password");
+        this.$q.notify("请输入密码");
         return;
       }
 
       this.$q.loading.show({
-        message: "<b>Logining game, please wait...</b>"
+        message: "<b>正在登陆游戏...</b>"
       });
 
       let timer = window.setTimeout(() => {
         this.$q.loading.hide();
+        this.$q.notify("启动游戏失败");
       }, 180000);
 
       common.SaveJson(
@@ -213,6 +221,43 @@ export default {
 
       this.$q.loading.hide();
       window.clearTimeout(timer);
+
+      window.close();
+    },
+
+    readRemote(json) {
+      if (json) {
+        this.update = json.update;
+        this.server = json.server;
+
+        json.news.forEach(item => {
+          this.news.push({
+            title: item.title,
+            icon: item.icon,
+            href: item.href
+          });
+        });
+
+        json.banner.forEach(item => {
+          this.banner.push({
+            title: item.title,
+            img: item.img,
+            href: item.href
+          });
+        });
+      } else {
+        this.news.push({
+          title: "连接服务器失败",
+          icon: "",
+          href: window.location.origin + "/404"
+        });
+
+        this.banner.push({
+          title: "连接服务器失败",
+          img: "",
+          href: window.location.origin + "/404"
+        });
+      }
     }
   },
 
@@ -227,64 +272,42 @@ export default {
     this.dir = json.dir;
     this.launcher = json.launcher;
 
-    common.RequestURL(this.launcher, "", "", "GET", (status, data) => {
-      if (status == "success") {
-        json = JSON.parse(data.toString());
-        if (json) {
-          this.update = json.update;
-          this.version = json.version;
-          this.server = json.server;
+    common.applyLoc();
 
-          json.news.forEach(item => {
-            this.news.push({
-              title: item.title,
-              icon: item.icon,
-              href: item.href
-            });
-          });
+    this.label_Username = common.lang["用户名"];
+    this.label_Username = common.lang["用户名"];
+    this.label_Username = common.lang["用户名"];
+    this.label_Username = common.lang["用户名"];
 
-          json.banner.forEach(item => {
-            this.banner.push({
-              title: item.title,
-              img: item.img,
-              href: item.href
-            });
-          });
-        } else {
-          json.news.forEach(() => {
-            this.news.push({
-              title: "connect server error",
-              icon: "",
-              href: window.location.origin + "/404"
-            });
-          });
-
-          json.banner.forEach(() => {
-            this.banner.push({
-              title: "connect server error",
-              img: "",
-              href: window.location.origin + "/404"
-            });
-          });
-        }
-      } else {
-        this.news.push({
-          title: "connect server error",
-          icon: "",
-          href: window.location.origin + "/404"
-        });
-
-        this.banner.push({
-          title: "connect server error",
-          img: "",
-          href: window.location.origin + "/404"
-        });
-      }
-    });
   },
 
   mounted() {
     this.onResize();
+
+    let json = common.GetJson("config.json");
+    common.RequestURL(this.launcher, "", "", "GET", (status, data) => {
+      if (status == "success") {
+        json = JSON.parse(data.toString());
+        this.readRemote(json);
+      } else {
+        common.RequestURL(this.launcher, "", "", "GET", (status, data) => {
+          if (status == "success") {
+            json = JSON.parse(data.toString());
+            this.readRemote(json);
+          } else {
+            common.RequestURL(this.launcher, "", "", "GET", (status, data) => {
+              if (status == "success") {
+                json = JSON.parse(data.toString());
+                this.readRemote(json);
+              } else {
+                json = JSON.parse(data.toString());
+                this.readRemote(json);
+              }
+            });
+          }
+        });
+      }
+    });
 
     if (this.autologin) {
       if (!this.logined) this.login();

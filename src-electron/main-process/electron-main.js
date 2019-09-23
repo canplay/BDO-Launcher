@@ -10,7 +10,6 @@ import contextMenu from "electron-context-menu";
 import fileStream from "fs";
 import log from "electron-log";
 import cp from "child_process";
-import os from "os";
 
 // npm run lint
 // npm run build
@@ -41,10 +40,15 @@ if (!gotTheLock) {
   });
 }
 
-let mainWindow, trayIcon;
+let mainWindow, trayIcon, lang;
 
 function createWindow() {
   const packageJson = require("../../package.json");
+
+  const json = require("../../lang.json");
+  for (let index = 0; index < json.lang.length; index++) {
+    if (json.lang[index].default) lang = json.lang[index];
+  }
 
   /**
    * Initial window options
@@ -91,15 +95,15 @@ function createWindow() {
   });
 
   mainWindow.on("close", event => {
-    trayIcon.displayBalloon({
-      title: packageJson.productName,
-      icon: __statics + "/icon.png",
-      content: "Click the icon to display the Launcher"
-    });
+    // trayIcon.displayBalloon({
+    //   title: packageJson.productName,
+    //   icon: __statics + "/icon.png",
+    //   content: "Click the icon to display the Launcher"
+    // });
 
-    mainWindow.hide();
-    mainWindow.setSkipTaskbar(true);
-    event.preventDefault();
+    // mainWindow.hide();
+    // mainWindow.setSkipTaskbar(true);
+    // event.preventDefault();
   });
 
   mainWindow.webContents.session.on(
@@ -119,7 +123,7 @@ function createWindow() {
     trayIcon = new Tray(__statics + "/icon.png");
     const contextMenu = Menu.buildFromTemplate([
       {
-        label: "Exit",
+        label: lang["退出"],
         type: "normal",
         click: () => {
           app.exit(0);
@@ -170,10 +174,10 @@ app.on("web-contents-created", (e, contents) => {
   contextMenu({
     window: contents,
     labels: {
-      cut: "Cut",
-      copy: "Copy",
-      paste: "Past",
-      saveImageAs: "Save"
+      cut: lang["剪切"],
+      copy: lang["复制"],
+      paste: lang["粘贴"],
+      saveImageAs: lang["保存"]
     },
     menu: actions => [
       actions.cut({
@@ -243,6 +247,12 @@ ipcMain.on("cookies", (event, url) => {
     mainWindow.webContents.send("cookies", cookies);
   });
 });
+
+function translate(arg) {
+  lang.filter(e => {
+    return e.level == arg;
+  });
+}
 
 async function addDir(path) {
   if (fileStream.existsSync(path)) return;

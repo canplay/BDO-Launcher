@@ -7,6 +7,12 @@ import http from "http";
 import https from "https";
 
 export default {
+  data() {
+    return {
+      lang: ""
+    }
+  },
+
   uuid() {
     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
       let r = (Math.random() * 16) | 0,
@@ -123,6 +129,13 @@ export default {
     fileStream.writeFile(file, data, err => {
       if (err) this.ipc("log", err);
     });
+  },
+
+  applyLoc() {
+    let json = this.GetJson("lang.json");
+    for (let index = 0; index < json.lang.length; index++) {
+      if (json.lang[index].default) this.lang = json.lang[index];
+    }
   },
 
   CheckAutoStart() {

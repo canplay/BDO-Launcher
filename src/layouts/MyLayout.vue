@@ -34,11 +34,11 @@
         icon="settings"
         @click="option"
       >
-        <q-tooltip content-style="font-size: 12px">Option</q-tooltip>
+        <q-tooltip content-style="font-size: 12px">设置</q-tooltip>
       </q-btn>
 
       <q-btn dense flat color="black" icon="minimize" @click="minimize">
-        <q-tooltip content-style="font-size: 12px">Minimize</q-tooltip>
+        <q-tooltip content-style="font-size: 12px">最小化</q-tooltip>
       </q-btn>
 
       <!-- <q-btn dense flat color="black" icon="crop_square" @click="maximize">
@@ -46,7 +46,7 @@
       </q-btn>-->
 
       <q-btn dense flat color="black" icon="close" @click="close">
-        <q-tooltip content-style="font-size: 12px">Close</q-tooltip>
+        <q-tooltip content-style="font-size: 12px">关闭</q-tooltip>
       </q-btn>
     </q-toolbar>
 
@@ -61,29 +61,29 @@
             <q-input
               standout="bg-primary text-white"
               v-model="dir"
-              label="The game directory"
+              label="游戏所在的目录"
             />
 
             <q-input
               standout="bg-primary text-white"
               v-model="user"
-              label="Username"
+              label="用户名"
             />
 
             <q-input
               standout="bg-primary text-white"
               v-model="pwd"
-              label="Password"
+              label="密码"
             />
 
-            <q-toggle v-model="autologin" label="Auto login" />
-            <q-toggle v-model="remember" label="Keep Password" />
+            <q-toggle v-model="autologin" label="自动登录" />
+            <q-toggle v-model="remember" label="保存密码" />
 
             <div class="text-center">
-              <q-btn class="fit" label="Save" color="primary" @click="onSave" />
+              <q-btn class="fit" label="保存" color="primary" @click="onSave" />
               <q-btn
                 class="fit"
-                label="Reset"
+                label="重置"
                 color="primary"
                 flat
                 @click="onReset"
@@ -103,7 +103,7 @@
         <q-card-section>{{ dlg_alertInfo }}</q-card-section>
 
         <q-card-actions align="right">
-          <q-btn flat label="Ok" color="primary" v-close-popup />
+          <q-btn flat label="确定" color="primary" v-close-popup />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -143,21 +143,22 @@ export default {
   data() {
     return {
       title: this.$q.electron.remote.getCurrentWindow().getTitle(),
-      version: "0.0.0",
       appurl: "index",
       style: { width: "", height: "" },
       dlg_option: false,
       dlg_alert: false,
       dlg_alertInfo: "",
-      download_tip: "Downloads",
+      download_tip: "",
       show_download: false,
       user: "",
       pwd: "",
       autostart: false,
       autologin: false,
       remember: false,
+      version: "0.0.0",
       dir: "",
-      launcher: ""
+      launcher: "",
+      lang: ""
     };
   },
 
@@ -210,22 +211,22 @@ export default {
 
     onSave() {
       if (!this.dir || this.dir == "") {
-        this.$q.notify("Please enter the game directory");
+        this.$q.notify(lang["请先设置游戏所在的目录"]);
         return;
       }
 
       if (this.remember && !this.user && this.user == "") {
-        this.$q.notify("Please enter username");
+        this.$q.notify(lang["请输入用户名"]);
         return;
       }
 
       if (this.remember && !this.pwd && this.pwd == "") {
-        this.$q.notify("Please enter password");
+        this.$q.notify(lang["请输入密码"]);
         return;
       }
 
       this.$q.loading.show({
-        message: "<b>Saving Settings, please wait...</b>"
+        message: "<b>" + lang["正在保存设置..."] + "</b>"
       });
 
       let timer = window.setTimeout(() => {
@@ -276,21 +277,21 @@ export default {
     },
 
     download_start(arg) {
-      this.download_tip = "Downloading: " + arg;
+      this.download_tip = lang["正在下载: "] + arg;
       this.show_download = true;
 
       self.setInterval(() => {
-        this.download_tip = "Download";
+        this.download_tip = lang["下载"];
         this.show_download = false;
       }, 3000);
     },
 
     download_complete(arg) {
-      this.download_tip = "Download completes: " + arg;
+      this.download_tip = lang["下载完毕: "] + arg;
       this.show_download = true;
 
       self.setInterval(() => {
-        this.download_tip = "Download";
+        this.download_tip = lang["下载"];
         this.show_download = false;
       }, 3000);
     }
@@ -303,15 +304,13 @@ export default {
     if (this.appurl != "index")
       this.$router.push("window" + window.location.search);
 
-    let json = common.GetJson("launcher.json");
-    if (json) this.version = json.version;
-
     json = common.GetJson("config.json");
     this.user = base64.Base64.decode(json.user);
     this.pwd = base64.Base64.decode(json.pwd);
     this.autostart = common.CheckAutoStart();
     this.autologin = json.autologin;
     this.remember = json.remember;
+    this.version = json.version;
     this.dir = json.dir;
     this.launcher = json.launcher;
 
@@ -320,6 +319,13 @@ export default {
 
     this.$root.$on("download_start", this.download_start);
     this.$root.$on("download_complete", this.download_complete);
+
+    json = common.GetJson("../../lang.json");
+    for (let index = 0; index < json.lang.length; index++) {
+      if (json.lang[index].default) lang = json.lang[index];
+    }
+
+    this.download_tip = lang["下载"];
   },
 
   destroyed() {
