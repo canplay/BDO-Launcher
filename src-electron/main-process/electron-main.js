@@ -255,14 +255,12 @@ function translate(arg) {
 }
 
 function GetJson(file) {
-  if (!fileStream.existsSync(file))
-    file = app.getAppPath() + "/" + file;
+  file = app.getAppPath() + "\\" + file;
   return JSON.parse(fileStream.readFileSync(file).toString());
 }
 
 function SaveJson(data, file) {
-  if (!fileStream.existsSync(file))
-    file = app.getAppPath() + "/" + file;
+  file = app.getAppPath() + "\\" + file;
   fileStream.writeFile(file, data, err => {
     if (err) log.log(err);
   });

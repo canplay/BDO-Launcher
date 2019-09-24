@@ -213,13 +213,14 @@ export default {
         return;
       }
 
-      this.label_Status = common.lang["正在启动游戏..."];
+      // this.label_Status = common.lang["正在登录游戏..."];
 
       this.$q.loading.show();
 
       let timer = window.setTimeout(() => {
         this.$q.loading.hide();
         this.label_Status = common.lang["启动游戏失败"];
+        window.clearTimeout(timer);
       }, 180000);
 
       this.$root.$emit(
@@ -230,14 +231,15 @@ export default {
         this.remember ? true : false
       );
 
-      common.RunGame(this.dir, this.server, this.user, this.pwd);
-
-      window.setTimeout(() => {
-        this.$q.loading.hide();
-        window.clearTimeout(timer);
-
-        window.close();
-      }, 15000);
+      common.RunGame(this.dir, this.server, this.user, this.pwd, code => {
+        if (code) {
+          window.close();
+        } else {
+          this.label_Status = common.lang["启动游戏失败"];
+          this.$q.loading.hide();
+          window.clearTimeout(timer);
+        }
+      });
     },
 
     readRemote(data) {

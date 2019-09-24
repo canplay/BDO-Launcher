@@ -47,8 +47,10 @@ std::string WideToMulit(const wchar_t* strWide)
   return strTemp;
 }
 
-bool CreateLinkFile(LPCWSTR szStartAppPath, LPCWSTR szAddCmdLine, LPCOLESTR szDestLnkPath, LPCWSTR szIconPath)
+int CreateLinkFile(LPCWSTR szStartAppPath, LPCWSTR szAddCmdLine, LPCOLESTR szDestLnkPath, LPCWSTR szIconPath)
 {
+  int exit = 0;
+
 	HRESULT hr = CoInitialize(NULL);
 	if (SUCCEEDED(hr))
 	{
@@ -69,33 +71,42 @@ bool CreateLinkFile(LPCWSTR szStartAppPath, LPCWSTR szAddCmdLine, LPCOLESTR szDe
 			if (SUCCEEDED(hr))
 			{
 				hr = pPersistFile->Save((szDestLnkPath), FALSE);
-				if (SUCCEEDED(hr)) return true;
+				if (SUCCEEDED(hr)) exit = 1;
 				pPersistFile->Release();
 			}
 			pShellLink->Release();
 		}
 		CoUninitialize();
 	}
-	return false;
+	return exit;
 }
 
-void EnableAutoStartShotcut(LPCWSTR szFilePath, LPCWSTR szShotcut)
+int EnableAutoStartShotcut(LPCWSTR szFilePath, LPCWSTR szShotcut)
 {
 	wchar_t szTemp[MAX_PATH] = { 0 };
 	swprintf_s(szTemp, L"C:/ProgramData/Microsoft/Windows/Start Menu/Programs/StartUp/%s", szShotcut);
 
-	if (_waccess(szTemp, 0) != 0) CreateLinkFile(szFilePath, L"", szTemp, 0);
+  if (_waccess(szTemp, 0) != 0) {
+    return CreateLinkFile(szFilePath, L"", szTemp, 0);
+  }
+
+  return 0;
 }
 
-void DisableAutoStartShotcut(LPCWSTR szFilePath, LPCWSTR szShotcut)
+int DisableAutoStartShotcut(LPCWSTR szFilePath, LPCWSTR szShotcut)
 {
 	wchar_t szTemp[MAX_PATH] = { 0 };
 	swprintf_s(szTemp, L"C:/ProgramData/Microsoft/Windows/Start Menu/Programs/StartUp/%s", szShotcut);
 
-	if (_waccess(szTemp, 0) == 0) DeleteFile(szTemp);
+  if (_waccess(szTemp, 0) == 0) {
+    DeleteFile(szTemp);
+    return 1;
+  }
+
+  return 0;
 }
 
-void EnableDesktopShotcut(LPCWSTR szFilePath, LPCWSTR szShotcut)
+int EnableDesktopShotcut(LPCWSTR szFilePath, LPCWSTR szShotcut)
 {
 	wchar_t szUserName[MAX_PATH] = { 0 };
 	DWORD dwSize = MAX_PATH;
@@ -104,10 +115,14 @@ void EnableDesktopShotcut(LPCWSTR szFilePath, LPCWSTR szShotcut)
 	wchar_t szTemp[MAX_PATH] = { 0 };
 	swprintf_s(szTemp, L"C:/Users/%s/Desktop/%s", szUserName, szShotcut);
 
-	if (_waccess(szTemp, 0) != 0) CreateLinkFile(szFilePath, L"", szTemp, 0);
+  if (_waccess(szTemp, 0) != 0) {
+    return CreateLinkFile(szFilePath, L"", szTemp, 0);
+  }
+
+  return 0;
 }
 
-void DisableDesktopShotcut(LPCWSTR szFilePath, LPCWSTR szShotcut)
+int DisableDesktopShotcut(LPCWSTR szFilePath, LPCWSTR szShotcut)
 {
 	wchar_t szUserName[MAX_PATH] = { 0 };
 	DWORD dwSize = MAX_PATH;
@@ -116,11 +131,18 @@ void DisableDesktopShotcut(LPCWSTR szFilePath, LPCWSTR szShotcut)
 	wchar_t szTemp[MAX_PATH] = { 0 };
 	swprintf_s(szTemp, L"C:/Users/%s/Desktop/%s", szUserName, szShotcut);
 
-	if (_waccess(szTemp, 0) == 0) DeleteFile(szTemp);
+  if (_waccess(szTemp, 0) == 0) {
+    DeleteFile(szTemp);
+    return 1;
+  };
+
+  return 0;
 }
 
-void EnableAutoStartRegistry(LPCWSTR szFilePath, LPCWSTR szName)
+int EnableAutoStartRegistry(LPCWSTR szFilePath, LPCWSTR szName)
 {
+  int exit = 0;
+
 	wchar_t szReg[MAX_PATH] = L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run";
 	HKEY hKey;
 	if (SUCCEEDED(RegOpenKeyEx(HKEY_LOCAL_MACHINE, szReg, 0, KEY_WOW64_64KEY | KEY_ALL_ACCESS, &hKey)))
@@ -131,7 +153,10 @@ void EnableAutoStartRegistry(LPCWSTR szFilePath, LPCWSTR szName)
 
 		if (SUCCEEDED(RegQueryValueEx(hKey, szName, 0, &dwType, (LPBYTE)&dwValue, &dwSize)))
 		{
-			if (dwSize == sizeof(DWORD)) RegSetValueEx(hKey, szName, 0, REG_SZ, (LPBYTE)szFilePath, wcslen(szFilePath) * sizeof(wchar_t) + 1);
+      if (dwSize == sizeof(DWORD)) {
+        RegSetValueEx(hKey, szName, 0, REG_SZ, (LPBYTE)szFilePath, wcslen(szFilePath) * sizeof(wchar_t) + 1);
+        exit = 1;
+      }
 		}
 	}
 	else if(SUCCEEDED(RegOpenKeyEx(HKEY_LOCAL_MACHINE, szReg, 0, KEY_ALL_ACCESS, &hKey)))
@@ -142,15 +167,22 @@ void EnableAutoStartRegistry(LPCWSTR szFilePath, LPCWSTR szName)
 		
 		if (SUCCEEDED(RegQueryValueEx(hKey, szName, 0, &dwType, (LPBYTE)&dwValue, &dwSize)))
 		{
-			if (dwSize == sizeof(DWORD)) RegSetValueEx(hKey, szName, 0, REG_SZ, (LPBYTE)szFilePath, wcslen(szFilePath) * sizeof(wchar_t) + 1);
+      if (dwSize == sizeof(DWORD)) {
+        RegSetValueEx(hKey, szName, 0, REG_SZ, (LPBYTE)szFilePath, wcslen(szFilePath) * sizeof(wchar_t) + 1);
+        exit = 1;
+      }
 		}
 	}
 
 	RegCloseKey(hKey);
+
+  return exit;
 }
 
-void DisableAutoStartRegistry(LPCWSTR szFilePath, LPCWSTR szName)
+int DisableAutoStartRegistry(LPCWSTR szFilePath, LPCWSTR szName)
 {
+  int exit = 0;
+
 	wchar_t szReg[MAX_PATH] = L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run";
 	HKEY hKey;
 	if (SUCCEEDED(RegOpenKeyEx(HKEY_LOCAL_MACHINE, szReg, 0, KEY_WOW64_64KEY | KEY_ALL_ACCESS, &hKey)))
@@ -161,7 +193,10 @@ void DisableAutoStartRegistry(LPCWSTR szFilePath, LPCWSTR szName)
 
 		if (SUCCEEDED(RegQueryValueEx(hKey, szName, 0, &dwType, (LPBYTE)& dwValue, &dwSize)))
 		{
-			if (dwSize != sizeof(DWORD)) RegDeleteValue(hKey, szName);
+      if (dwSize != sizeof(DWORD)) {
+        RegDeleteValue(hKey, szName);
+        exit = 1;
+      }
 		}
 	}
 	else if (SUCCEEDED(RegOpenKeyEx(HKEY_LOCAL_MACHINE, szReg, 0, KEY_ALL_ACCESS, &hKey)))
@@ -172,11 +207,16 @@ void DisableAutoStartRegistry(LPCWSTR szFilePath, LPCWSTR szName)
 
 		if (SUCCEEDED(RegQueryValueEx(hKey, szName, 0, &dwType, (LPBYTE)& dwValue, &dwSize)))
 		{
-			if (dwSize != sizeof(DWORD)) RegDeleteValue(hKey, szName);
+      if (dwSize != sizeof(DWORD)) {
+        RegDeleteValue(hKey, szName);
+        exit = 1;
+      }
 		}
 	}
 
 	RegCloseKey(hKey);
+
+  return exit;
 }
 
 void DelFile(LPCWSTR szFilePath)
@@ -205,8 +245,10 @@ void DelFile(LPCWSTR szFilePath)
 	RemoveDirectory(szFilePath);
 }
 
-void RunGame(LPCSTR dir, LPCSTR ip, LPCSTR username, LPCSTR password)
+int RunGame(LPCSTR dir, LPCSTR ip, LPCSTR username, LPCSTR password)
 {
+  int exit = 0;
+
   char szPara[MAX_PATH];
   sprintf_s(szPara, "%s,%s", username, password);
 
@@ -240,6 +282,8 @@ void RunGame(LPCSTR dir, LPCSTR ip, LPCSTR username, LPCSTR password)
           {
             if (wcscmp(module.szModule, L"BlackDesert64.exe") == 0)
             {
+              exit = 1;
+
               CloseHandle(hShot);
 
               HANDLE hProcess = OpenProcess(0x1F0FFF, FALSE, module.th32ProcessID);
@@ -255,6 +299,7 @@ void RunGame(LPCSTR dir, LPCSTR ip, LPCSTR username, LPCSTR password)
                   BYTE byte[] = { 0x90, 0x90 };
                   if (!WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddr + 10654470L), byte, sizeof(byte) * sizeof(BYTE), &size))
                   {
+                    exit = 0;
                     CloseHandle(hProcess);
                     break;
                   }
@@ -266,6 +311,7 @@ void RunGame(LPCSTR dir, LPCSTR ip, LPCSTR username, LPCSTR password)
                   BYTE byte[] = { 0x90, 0x90 };
                   if (!WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddr + 8018698L), byte, sizeof(byte) * sizeof(BYTE), &size))
                   {
+                    exit = 0;
                     CloseHandle(hProcess);
                     break;
                   }
@@ -277,6 +323,7 @@ void RunGame(LPCSTR dir, LPCSTR ip, LPCSTR username, LPCSTR password)
                   BYTE byte[] = { 0xEB };
                   if (!WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddr + 8018928L), byte, sizeof(byte) * sizeof(BYTE), &size))
                   {
+                    exit = 0;
                     CloseHandle(hProcess);
                     break;
                   }
@@ -288,6 +335,7 @@ void RunGame(LPCSTR dir, LPCSTR ip, LPCSTR username, LPCSTR password)
                   BYTE byte[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
                   if (!WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddr + 45357624L), byte, sizeof(byte) * sizeof(BYTE), &size))
                   {
+                    exit = 0;
                     CloseHandle(hProcess);
                     break;
                   }
@@ -301,6 +349,7 @@ void RunGame(LPCSTR dir, LPCSTR ip, LPCSTR username, LPCSTR password)
                   BYTE* byte = (BYTE*)str.c_str();
                   if (!WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddr + 45357624L), byte, str.length(), &size))
                   {
+                    exit = 0;
                     CloseHandle(hProcess);
                     break;
                   }
@@ -322,24 +371,28 @@ void RunGame(LPCSTR dir, LPCSTR ip, LPCSTR username, LPCSTR password)
       ret = Process32Next(hShot, &process);
     }
   }
+
+  return exit;
 }
 
 int main(int argc, LPCSTR argv[])
 {
 	if (strcmp(argv[1], "EnableAutoStartShotcut") == 0)
-		EnableAutoStartShotcut(MulitToWide(argv[2]).c_str(), MulitToWide(argv[3]).c_str());
+		return EnableAutoStartShotcut(MulitToWide(argv[2]).c_str(), MulitToWide(argv[3]).c_str());
 	else if (strcmp(argv[1], "DisableAutoStartShotcut") == 0)
-		DisableAutoStartShotcut(MulitToWide(argv[2]).c_str(), MulitToWide(argv[3]).c_str());
+    return DisableAutoStartShotcut(MulitToWide(argv[2]).c_str(), MulitToWide(argv[3]).c_str());
 	else if (strcmp(argv[1], "EnableDesktopShotcut") == 0)
-		EnableDesktopShotcut(MulitToWide(argv[2]).c_str(), MulitToWide(argv[3]).c_str());
+    return EnableDesktopShotcut(MulitToWide(argv[2]).c_str(), MulitToWide(argv[3]).c_str());
 	else if (strcmp(argv[1], "DisableDesktopShotcut") == 0)
-		DisableDesktopShotcut(MulitToWide(argv[2]).c_str(), MulitToWide(argv[3]).c_str());
+    return DisableDesktopShotcut(MulitToWide(argv[2]).c_str(), MulitToWide(argv[3]).c_str());
 	else if (strcmp(argv[1], "EnableAutoStartRegistry") == 0)
-		EnableAutoStartRegistry(MulitToWide(argv[2]).c_str(), MulitToWide(argv[3]).c_str());
+    return EnableAutoStartRegistry(MulitToWide(argv[2]).c_str(), MulitToWide(argv[3]).c_str());
 	else if (strcmp(argv[1], "DisableAutoStartRegistry") == 0)
-		DisableAutoStartRegistry(MulitToWide(argv[2]).c_str(), MulitToWide(argv[3]).c_str());
+    return DisableAutoStartRegistry(MulitToWide(argv[2]).c_str(), MulitToWide(argv[3]).c_str());
 	else if (strcmp(argv[1], "DeleteFile") == 0)
     DelFile(MulitToWide(argv[2]).c_str());
   else if (strcmp(argv[1], "RunGame") == 0)
-    RunGame(argv[2], argv[3], argv[4], argv[5]);
+    return RunGame(argv[2], argv[3], argv[4], argv[5]);
+
+  return 0;
 }

@@ -58,7 +58,7 @@
       <router-view ref="container" />
     </q-page-container>
 
-    <q-dialog v-model="dlg_option">
+    <q-dialog v-model="dlg_option" style="width: 300px">
       <q-card>
         <q-card-section class="row items-center">
           <div class="q-gutter-md">

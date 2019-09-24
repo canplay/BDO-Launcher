@@ -118,24 +118,19 @@ export default {
   },
 
   GetJson(file) {
-    if (!fileStream.existsSync(file))
-      file = this.$q.electron.remote.app.getAppPath() + "/" + file;
+    file = electron.remote.app.getAppPath() + "\\" + file;
     return JSON.parse(fileStream.readFileSync(file).toString());
   },
 
   SaveJson(data, file) {
-    if (!fileStream.existsSync(file))
-      file = this.$q.electron.remote.app.getAppPath() + "/" + file;
+    file = electron.remote.app.getAppPath() + "\\" + file;
     fileStream.writeFile(file, data, err => {
       if (err) this.ipc("log", err);
     });
   },
 
   applyLoc() {
-    let file = "lang.json";
-    if (!fileStream.existsSync(file))
-      file = this.$q.electron.remote.app.getAppPath() + "/" + file;
-    let json = this.GetJson(file);
+    let json = this.GetJson("lang.json");
     for (let index = 0; index < json.lang.length; index++) {
       if (json.lang[index].default) {
         this.lang = json.lang[index];
@@ -153,7 +148,7 @@ export default {
 
   _formatString() {
     if (arguments.length != 1) {
-      throw "无字符串，无法格式化";
+      throw "arg number error";
     }
     var reg = /([a-zA-Z])/g;
     var regarray = arguments[0].match(reg);
@@ -161,11 +156,11 @@ export default {
       return arguments[0].split(".");
     }
     if (regarray && regarray.length != 1) {
-      throw "格式错误，只允许出现一个字母";
+      throw "version format error";
     }
     var regString = regarray.join("");
     if (this._endWith(arguments[0], regString) != true) {
-      throw "传入的版本号有错";
+      throw "version format error";
     }
     return arguments[0]
       .replace(regString, "." + regString.charCodeAt())
@@ -241,8 +236,8 @@ export default {
       });
   },
 
-  RunGame(dir, server, username, password) {
-    let process = cp
+  async RunGame(dir, server, username, password, callback) {
+    let process = await cp
       .exec(
         'Permission.exe RunGame "' +
           dir +
@@ -257,8 +252,9 @@ export default {
           windowsHide: true
         }
       )
-      .on("exit", () => {
+      .on("exit", code => {
         process.kill();
+        callback(code);
       });
   }
 };
