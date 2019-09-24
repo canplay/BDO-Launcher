@@ -1,6 +1,6 @@
 {
   "name": "bdolauncher",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Powered by CaNplay",
   "productName": "BDO Launcher",
   "cordovaId": "org.canplay.oa.app",
@@ -17,7 +17,6 @@
     "electron-context-menu": "^0.15.0",
     "electron-log": "^3.0.8",
     "js-base64": "^2.5.1",
-    "node-addon-api": "^1.7.1",
     "quasar": "^1.1.2",
     "vue-i18n": "^8.14.1"
   },

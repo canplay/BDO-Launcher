@@ -1,41 +1,31 @@
 <template>
   <div class="row" style="padding: 20px">
     <div class="col">
-      <transition
-        appear
-        enter-active-class="animated fadeIn"
-        leave-active-class="animated fadeOut"
-      >
-        <webview
-          v-if="type === 'webview'"
-          id="webview"
-          :src="url"
-          :httpreferrer="url"
-          useragent="Mozilla/5.0 (Windows NT 10.0; WOW64; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.131 Safari/537.36 Core/1.70.3722.400"
-        ></webview>
-        <webview
-          v-else-if="type === 'webviewnode'"
-          id="webview"
-          :src="url"
-          :httpreferrer="url"
-          useragent="Mozilla/5.0 (Windows NT 10.0; WOW64; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.131 Safari/537.36 Core/1.70.3722.400"
-          nodeintegration
-        ></webview>
-        <iframe
-          v-else
-          id="webview"
-          :src="url"
-          frameborder="0"
-          allowtransparency="true"
-          allowfullscreen="true"
-          scrolling="no"
-        ></iframe>
-      </transition>
+      <webview
+        v-if="type === 'webview'"
+        id="webview"
+        :src="url"
+        :httpreferrer="url"
+        useragent="Mozilla/5.0 (Windows NT 10.0; WOW64; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.131 Safari/537.36 Core/1.70.3722.400"
+      ></webview>
+      <webview
+        v-else-if="type === 'webviewnode'"
+        id="webview"
+        :src="url"
+        :httpreferrer="url"
+        useragent="Mozilla/5.0 (Windows NT 10.0; WOW64; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.131 Safari/537.36 Core/1.70.3722.400"
+        nodeintegration
+      ></webview>
+      <iframe
+        v-else
+        id="webview"
+        :src="url"
+        frameborder="0"
+        allowtransparency="true"
+        allowfullscreen="true"
+        scrolling="no"
+      ></iframe>
     </div>
-
-    <q-inner-loading :showing="loading">
-      <q-spinner-cube size="300px" color="primary" />
-    </q-inner-loading>
   </div>
 </template>
 
@@ -54,7 +44,6 @@ export default {
   data() {
     return {
       webview: null,
-      loading: false,
       executeList: []
     };
   },
@@ -93,17 +82,17 @@ export default {
     },
 
     didstartloading() {
-      this.loading = true;
+      this.$q.loading.show();
 
       common.ipc("cookies", this.url);
 
       setInterval(() => {
-        this.loading = false;
+        this.$q.loading.hide();
       }, 30000);
     },
 
     didstoploading() {
-      this.loading = false;
+      this.$q.loading.hide();
     },
 
     newwindow(event, arg) {
@@ -158,7 +147,7 @@ export default {
   created() {
     window.addEventListener("resize", this.onResize);
 
-    this.loading = true;
+    this.$q.loading.show();
 
     this.$q.electron.ipcRenderer.removeAllListeners();
 
@@ -211,6 +200,12 @@ export default {
     this.webview.addEventListener("dom-ready", this.domready);
     this.webview.addEventListener("console-message", this.onmessage);
     this.onResize();
+
+    // if (this.url === "./statics/AriaNg.html") {
+    //   this.execute(
+    //     "document.querySelector('#siderbar-menu > li:nth-child(1)').innerText = 'Download';"
+    //   );
+    // }
   },
 
   destroyed() {

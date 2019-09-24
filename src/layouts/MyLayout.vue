@@ -66,6 +66,7 @@
               standout="bg-primary text-white"
               v-model="dir"
               :label="label_Dir"
+              @click="showFileDlg"
             />
 
             <q-input
@@ -296,7 +297,7 @@ export default {
     },
 
     download_start(arg) {
-      this.download_tip = common.lang["正在下载: "] + arg;
+      this.download_tip = common.lang["正在下载"] + arg;
       this.show_download = true;
 
       self.setInterval(() => {
@@ -306,22 +307,34 @@ export default {
     },
 
     download_complete(arg) {
-      this.download_tip = common.lang["下载完毕: "] + arg;
+      this.download_tip = common.lang["下载完毕"] + arg;
       this.show_download = true;
 
       self.setInterval(() => {
         this.download_tip = common.lang["下载"];
         this.show_download = false;
       }, 3000);
+    },
+
+    showFileDlg() {
+      this.$q.electron.remote.dialog
+        .showOpenDialog({
+          properties: ["openFile"],
+          filters: [{ name: "BlackDesert64.exe", extensions: ["exe"] }]
+        })
+        .then(result => {
+          this.dir = result.filePaths[0].replace(/\\/g, "/");
+        });
     }
   },
 
   created() {
     window.addEventListener("resize", this.onResize);
-    this.appurl = common.GetUrlParamValue("appurl");
 
+    this.appurl = common.GetUrlParamValue("appurl");
     if (this.appurl != "index")
-      this.$router.push("window" + window.location.search);
+      this.$router.replace("window" + window.location.search);
+    else this.$router.replace("index");
 
     let json = common.GetJson("config.json");
     this.user = base64.Base64.decode(json.user);

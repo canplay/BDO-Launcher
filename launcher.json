@@ -14,6 +14,31 @@
             "title": "test new 3",
             "icon": "bluetooth",
             "href": "http://www.baidu.com"
+        },
+        {
+            "title": "test new 4",
+            "icon": "bluetooth",
+            "href": "http://www.baidu.com"
+        },
+        {
+            "title": "test new 5",
+            "icon": "bluetooth",
+            "href": "http://www.baidu.com"
+        },
+        {
+            "title": "test new 6",
+            "icon": "bluetooth",
+            "href": "http://www.baidu.com"
+        },
+        {
+            "title": "test new 7",
+            "icon": "bluetooth",
+            "href": "http://www.baidu.com"
+        },
+        {
+            "title": "test new 8",
+            "icon": "bluetooth",
+            "href": "http://www.baidu.com"
         }
     ],
     "banner": [
@@ -33,7 +58,7 @@
             "href": "http://www.baidu.com"
         }
     ],
-    "update": "http://www.example.com/update.json",
-    "version": "1.0.1",
+    "update": "http://127.0.0.1/update.exe",
+    "version": "1.0.2",
     "server": "127.0.0.1"
 }

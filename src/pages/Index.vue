@@ -1,40 +1,61 @@
 <template>
   <q-page :style="{ 'min-height': minHeight + 'px', height: minHeight + 'px' }">
-    <div class="column">
-      <div class="col text-center">
+    <div class="column vertical-middle">
+      <div class="col-auto text-center">
         <q-img src="statics/logo.png" style="width: 500px; height: 111px" />
       </div>
 
-      <div class="col" style="padding-top: 3%" />
+      <div class="col-1" style="margin: 1%" />
 
       <div class="col">
         <div class="row">
-          <div class="col">
-            <q-card
-              class="float-right"
-              style="background-color: rgba(0, 0, 0, 0.5); width: 70%; height: 90%"
-            >
-              <q-card-section>
-                <q-list dark>
-                  <q-item
-                    clickable
-                    v-ripple
-                    v-for="(item, index) in news"
-                    :key="index"
-                    @click="openurl(item.href)"
-                  >
-                    <q-item-section avatar>
-                      <q-icon :name="item.icon" />
-                    </q-item-section>
+          <div class="col-1"><p style="height: 50px"></p></div>
 
-                    <q-item-section>{{ item.title }}</q-item-section>
-                  </q-item>
-                </q-list>
-              </q-card-section>
-            </q-card>
+          <div class="col">
+            <div class="column fit">
+              <div class="col-10">
+                <q-card
+                  class="float-right fit"
+                  style="background-color: rgba(0, 0, 0, 0.5)"
+                >
+                  <q-card-section>
+                    <q-list dark>
+                      <q-item
+                        clickable
+                        v-ripple
+                        v-for="(item, index) in news"
+                        :key="index"
+                        @click="openurl(item.href)"
+                      >
+                        <q-item-section avatar>
+                          <q-icon :name="item.icon" />
+                        </q-item-section>
+
+                        <q-item-section>{{ item.title }}</q-item-section>
+                      </q-item>
+                    </q-list>
+                  </q-card-section>
+                </q-card>
+              </div>
+
+              <div class="col-1" />
+
+              <div class="col">
+                <q-card
+                  class="fit"
+                  style="background-color: rgba(0, 0, 0, 0.5)"
+                >
+                  <q-card-section class="text-white">{{
+                    label_Status
+                  }}</q-card-section>
+                </q-card>
+              </div>
+            </div>
           </div>
 
-          <div class="col" style="padding-left: 50px">
+          <div class="col-1" />
+
+          <div class="col">
             <div class="column">
               <div class="col">
                 <q-carousel
@@ -45,7 +66,7 @@
                   infinite
                   autoplay
                   class="text-white shadow-1 bg-black"
-                  style="width: 80%; height: 250px"
+                  style="height: 250px"
                 >
                   <q-carousel-slide
                     class="column no-wrap flex-center"
@@ -64,12 +85,10 @@
                 </q-carousel>
               </div>
 
-              <div class="col" style="padding-top: 1%" />
+              <div class="col-1" style="margin: 1%" />
 
               <div class="col">
-                <q-card
-                  style="background-color: rgba(0, 0, 0, 0.5); width: 80%"
-                >
+                <q-card style="background-color: rgba(0, 0, 0, 0.5)">
                   <q-card-section>
                     <div class="q-gutter-md">
                       <q-input
@@ -115,6 +134,8 @@
               </div>
             </div>
           </div>
+
+          <div class="col-1" />
         </div>
       </div>
     </div>
@@ -126,6 +147,7 @@
 <script>
 import common from "../store/common.js";
 import base64 from "js-base64";
+import cp from "child_process";
 
 export default {
   name: "PageIndex",
@@ -145,13 +167,15 @@ export default {
       banner: [],
       update: "",
       version: "",
+      remoteVersion: "",
       server: "",
       lang: "",
       label_Username: "",
       label_Password: "",
       label_Remember: "",
       label_AutoLogin: "",
-      label_Login: ""
+      label_Login: "",
+      label_Status: ""
     };
   },
 
@@ -175,7 +199,7 @@ export default {
       }
 
       if (!this.server || this.server == "") {
-        this.$q.notify("连接服务器失败");
+        this.label_Status = common.lang["连接服务器失败"];
         return;
       }
 
@@ -189,13 +213,11 @@ export default {
         return;
       }
 
-      this.$q.loading.show({
-        message: "<b>" + common.lang["正在登录游戏..."] + "</b>"
-      });
+      this.label_Status = common.lang["正在启动游戏..."];
 
       let timer = window.setTimeout(() => {
         this.$q.loading.hide();
-        this.$q.notify(common.lang["启动游戏失败"]);
+        this.label_Status = common.lang["启动游戏失败"];
       }, 180000);
 
       common.SaveJson(
@@ -230,15 +252,12 @@ export default {
       try {
         json = JSON.parse(data.toString());
       } catch (e) {
-        this.news.push({
-          title: common.lang["连接服务器失败"],
-          icon: "",
-          href: window.location.origin + "/404"
-        });
+        this.label_Status = common.lang["连接服务器失败"];
         return;
       }
 
       this.update = json.update;
+      this.remoteVersion = json.version;
       this.server = json.server;
 
       json.news.forEach(item => {
@@ -256,17 +275,69 @@ export default {
           href: item.href
         });
       });
+
+      this.checkUpdate();
+    },
+
+    checkUpdate() {
+      this.label_Status = common.lang["正在检查更新..."];
+
+      let result = common.Compare(this.version, this.remoteVersion);
+      if (result == -1) {
+        this.label_Status = common.lang["正在更新..."];
+
+        let name = this.update.split("/")[this.update.split("/").length - 1];
+        let type = this.update.split(".")[this.update.split(".").length - 1];
+
+        const ws = new WebSocket("ws://localhost:6800/jsonrpc");
+
+        ws.onopen = () => {
+          let command = {};
+          command.id = common.uuid();
+          command.jsonrpc = "2.0";
+          command.method = "aria2.addUri";
+          command.params = ["token:CaNplay", [this.update]];
+          ws.send(JSON.stringify(command));
+        };
+
+        ws.onmessage = event => {
+          let json = JSON.parse(event.data);
+          if (!json) return;
+          switch (json.method) {
+            case "aria2.onDownloadStart":
+              this.$root.$emit("download_start", "更新");
+              break;
+            case "aria2.onDownloadComplete":
+              this.$root.$emit("download_complete", "更新");
+              ws.close();
+              if (type === "exe") {
+                cp.exec(
+                  'explorer.exe "' +
+                    this.$q.electron.remote.app.getAppPath() +
+                    '\\downloads\\"' +
+                    name
+                );
+                window.close();
+              }
+              break;
+          }
+        };
+      } else if (result == 0) this.label_Status = common.lang["已是最新"];
+      else this.label_Status = common.lang["检查更新失败"];
     }
   },
 
   created() {
     window.addEventListener("resize", this.onResize);
 
+    this.label_Status = common.lang["正在连接服务器..."];
+
     let json = common.GetJson("config.json");
     if (json.user != "") this.user = base64.Base64.decode(json.user);
     if (json.pwd != "") this.pwd = base64.Base64.decode(json.pwd);
     this.autologin = json.autologin;
     this.remember = json.remember;
+    this.version = json.version;
     this.dir = json.dir;
     this.launcher = json.launcher;
 

@@ -14,7 +14,7 @@ export default {
   },
 
   uuid() {
-    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
+    return "xxxxxxxx-xxxx-yxxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
       let r = (Math.random() * 16) | 0,
         v = c === "x" ? r : (r & 0x3) | 0x8;
       return v.toString(16);
@@ -137,6 +137,61 @@ export default {
       if (json.lang[index].default) {
         this.lang = json.lang[index];
         break;
+      }
+    }
+  },
+
+  _endWith(string, str) {
+    if (arguments.length != 2) {
+      throw "arg number error";
+    }
+    return string.slice(-str.length) == str;
+  },
+
+  _formatString() {
+    if (arguments.length != 1) {
+      throw "无字符串，无法格式化";
+    }
+    var reg = /([a-zA-Z])/g;
+    var regarray = arguments[0].match(reg);
+    if (regarray == null) {
+      return arguments[0].split(".");
+    }
+    if (regarray && regarray.length != 1) {
+      throw "格式错误，只允许出现一个字母";
+    }
+    var regString = regarray.join("");
+    if (this._endWith(arguments[0], regString) != true) {
+      throw "传入的版本号有错";
+    }
+    return arguments[0]
+      .replace(regString, "." + regString.charCodeAt())
+      .split(".");
+  },
+
+  Compare() {
+    if (arguments.length > 2) {
+      throw "arg number error";
+    } else if (arguments.length < 2) {
+      throw "arg number error";
+    } else {
+      if (arguments[0] == arguments[1]) {
+        return 0;
+      }
+      var arr1 = this._formatString(arguments[0]);
+      var arr2 = this._formatString(arguments[1]);
+      var length = Math.min(arr1.length, arr2.length);
+      for (var i = 0; i != length; i++) {
+        if (arr1[i] > arr2[i]) {
+          return 1;
+        } else if (arr1[i] < arr2[i]) {
+          return -1;
+        }
+      }
+      if (length == arr1.length) {
+        return -1;
+      } else {
+        return 1;
       }
     }
   },
