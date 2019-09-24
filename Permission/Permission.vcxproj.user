@@ -10,7 +10,7 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>RunGame "E:/BDO_v795/bin64" "127.0.0.1" Username Password</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>RunGame "E:/BDO_v795/bin64/BlackDesert64.exe" "127.0.0.1" Username Password</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>

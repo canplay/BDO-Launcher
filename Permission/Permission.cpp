@@ -13,7 +13,7 @@ std::wstring MulitToWide(const char* strMulite)
   int nSize = MultiByteToWideChar(CP_ACP, 0, strMulite, strlen(strMulite), 0, 0);
   if (nSize <= 0) return L"";
 
-  auto pwszDst = new wchar_t[nSize + 1];
+  auto pwszDst = new wchar_t[(int64_t)nSize + 1];
   if (pwszDst == nullptr) return L"";
 
   MultiByteToWideChar(CP_ACP, 0, strMulite, strlen(strMulite), pwszDst, nSize);
@@ -210,7 +210,9 @@ void RunGame(LPCSTR dir, LPCSTR ip, LPCSTR username, LPCSTR password)
   char szPara[MAX_PATH];
   sprintf_s(szPara, "%s,%s", username, password);
 
-  ShellExecuteA(0, "open", "BlackDesert64.exe", szPara, dir, SW_SHOW);
+  std::string s = dir;
+  size_t pos = s.find_last_of("\\/");
+  ShellExecuteA(0, "open", dir, szPara, s.substr(0, pos).c_str(), SW_SHOW);
 
   HANDLE hShot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
   if (hShot != INVALID_HANDLE_VALUE)

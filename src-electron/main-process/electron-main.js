@@ -43,9 +43,9 @@ if (!gotTheLock) {
 let mainWindow, trayIcon, lang;
 
 function createWindow() {
-  const packageJson = require("../../package.json");
+  const packageJson = GetJson("package.json");
 
-  const json = require("../../lang.json");
+  const json = GetJson("lang.json");
   for (let index = 0; index < json.lang.length; index++) {
     if (json.lang[index].default) lang = json.lang[index];
   }
@@ -197,7 +197,7 @@ app.on("web-contents-created", (e, contents) => {
 });
 
 ipcMain.on("newWindow", (event, arg1, arg2) => {
-  const packageJson = require("../../package.json");
+  const packageJson = GetJson("package.json");
 
   let window = new BrowserWindow({
     title: packageJson.productName,
@@ -251,6 +251,20 @@ ipcMain.on("cookies", (event, url) => {
 function translate(arg) {
   lang.filter(e => {
     return e.level == arg;
+  });
+}
+
+function GetJson(file) {
+  if (!fileStream.existsSync(file))
+    file = app.getAppPath() + "/" + file;
+  return JSON.parse(fileStream.readFileSync(file).toString());
+}
+
+function SaveJson(data, file) {
+  if (!fileStream.existsSync(file))
+    file = app.getAppPath() + "/" + file;
+  fileStream.writeFile(file, data, err => {
+    if (err) log.log(err);
   });
 }
 

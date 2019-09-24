@@ -215,36 +215,29 @@ export default {
 
       this.label_Status = common.lang["正在启动游戏..."];
 
+      this.$q.loading.show();
+
       let timer = window.setTimeout(() => {
         this.$q.loading.hide();
         this.label_Status = common.lang["启动游戏失败"];
       }, 180000);
 
-      common.SaveJson(
-        '{"user":"' +
-          (this.remember ? base64.Base64.encode(this.user) : "") +
-          '","pwd":"' +
-          (this.remember ? base64.Base64.encode(this.pwd) : "") +
-          '","autostart":' +
-          false +
-          ',"autologin":' +
-          (this.autologin ? true : false) +
-          ',"remember":' +
-          (this.remember ? true : false) +
-          ',"dir":"' +
-          this.dir +
-          '","launcher":"' +
-          this.launcher +
-          '"}',
-        "config.json"
+      this.$root.$emit(
+        "saveOption",
+        this.remember ? base64.Base64.encode(this.user) : "",
+        this.remember ? base64.Base64.encode(this.pwd) : "",
+        this.autologin ? true : false,
+        this.remember ? true : false
       );
 
       common.RunGame(this.dir, this.server, this.user, this.pwd);
 
-      this.$q.loading.hide();
-      window.clearTimeout(timer);
+      window.setTimeout(() => {
+        this.$q.loading.hide();
+        window.clearTimeout(timer);
 
-      window.close();
+        window.close();
+      }, 15000);
     },
 
     readRemote(data) {
@@ -286,42 +279,46 @@ export default {
       if (result == -1) {
         this.label_Status = common.lang["正在更新..."];
 
-        let name = this.update.split("/")[this.update.split("/").length - 1];
-        let type = this.update.split(".")[this.update.split(".").length - 1];
+        try {
+          let name = this.update.split("/")[this.update.split("/").length - 1];
+          let type = this.update.split(".")[this.update.split(".").length - 1];
 
-        const ws = new WebSocket("ws://localhost:6800/jsonrpc");
+          const ws = new WebSocket("ws://localhost:6800/jsonrpc");
 
-        ws.onopen = () => {
-          let command = {};
-          command.id = common.uuid();
-          command.jsonrpc = "2.0";
-          command.method = "aria2.addUri";
-          command.params = ["token:CaNplay", [this.update]];
-          ws.send(JSON.stringify(command));
-        };
+          ws.onopen = () => {
+            let command = {};
+            command.id = common.uuid();
+            command.jsonrpc = "2.0";
+            command.method = "aria2.addUri";
+            command.params = ["token:CaNplay", [this.update]];
+            ws.send(JSON.stringify(command));
+          };
 
-        ws.onmessage = event => {
-          let json = JSON.parse(event.data);
-          if (!json) return;
-          switch (json.method) {
-            case "aria2.onDownloadStart":
-              this.$root.$emit("download_start", "更新");
-              break;
-            case "aria2.onDownloadComplete":
-              this.$root.$emit("download_complete", "更新");
-              ws.close();
-              if (type === "exe") {
-                cp.exec(
-                  'explorer.exe "' +
-                    this.$q.electron.remote.app.getAppPath() +
-                    '\\downloads\\"' +
-                    name
-                );
-                window.close();
-              }
-              break;
-          }
-        };
+          ws.onmessage = event => {
+            let json = JSON.parse(event.data);
+            if (!json) return;
+            switch (json.method) {
+              case "aria2.onDownloadStart":
+                this.$root.$emit("download_start", "更新");
+                break;
+              case "aria2.onDownloadComplete":
+                this.$root.$emit("download_complete", "更新");
+                ws.close();
+                if (type === "exe") {
+                  cp.exec(
+                    'explorer.exe "' +
+                      this.$q.electron.remote.app.getAppPath() +
+                      '\\downloads\\"' +
+                      name
+                  );
+                  window.close();
+                }
+                break;
+            }
+          };
+        } catch (e) {
+          this.label_Status = common.lang["检查更新失败"];
+        }
       } else if (result == 0) this.label_Status = common.lang["已是最新"];
       else this.label_Status = common.lang["检查更新失败"];
     }

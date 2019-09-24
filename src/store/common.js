@@ -132,7 +132,10 @@ export default {
   },
 
   applyLoc() {
-    let json = this.GetJson("lang.json");
+    let file = "lang.json";
+    if (!fileStream.existsSync(file))
+      file = this.$q.electron.remote.app.getAppPath() + "/" + file;
+    let json = this.GetJson(file);
     for (let index = 0; index < json.lang.length; index++) {
       if (json.lang[index].default) {
         this.lang = json.lang[index];

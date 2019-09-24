@@ -69,21 +69,6 @@
               @click="showFileDlg"
             />
 
-            <q-input
-              standout="bg-primary text-white"
-              v-model="user"
-              :label="label_Username"
-            />
-
-            <q-input
-              standout="bg-primary text-white"
-              v-model="pwd"
-              :label="label_Password"
-            />
-
-            <q-toggle v-model="autologin" :label="label_AutoLogin" />
-            <q-toggle v-model="remember" :label="label_Remember" />
-
             <div class="text-center">
               <q-btn
                 class="fit"
@@ -169,8 +154,6 @@ export default {
       dir: "",
       launcher: "",
       label_Dir: "",
-      label_Username: "",
-      label_Password: "",
       label_btnSave: "",
       label_btnReset: "",
       label_ok: "",
@@ -235,16 +218,6 @@ export default {
         return;
       }
 
-      if (this.remember && !this.user && this.user == "") {
-        this.$q.notify(common.lang["请输入用户名"]);
-        return;
-      }
-
-      if (this.remember && !this.pwd && this.pwd == "") {
-        this.$q.notify(common.lang["请输入密码"]);
-        return;
-      }
-
       this.$q.loading.show({
         message: "<b>" + common.lang["正在保存设置..."] + "</b>"
       });
@@ -271,6 +244,8 @@ export default {
           (this.remember ? true : false) +
           ',"dir":"' +
           this.dir +
+          '","version":"' +
+          this.version +
           '","launcher":"' +
           this.launcher +
           '"}',
@@ -316,6 +291,29 @@ export default {
       }, 3000);
     },
 
+    saveOption(arg1, arg2, arg3, arg4) {
+      common.SaveJson(
+        '{"user":"' +
+          arg1 +
+          '","pwd":"' +
+          arg2 +
+          '","autostart":' +
+          false +
+          ',"autologin":' +
+          arg3 +
+          ',"remember":' +
+          arg4 +
+          ',"dir":"' +
+          this.dir +
+          '","version":"' +
+          this.version +
+          '","launcher":"' +
+          this.launcher +
+          '"}',
+        "config.json"
+      );
+    },
+
     showFileDlg() {
       this.$q.electron.remote.dialog
         .showOpenDialog({
@@ -351,13 +349,12 @@ export default {
 
     this.$root.$on("download_start", this.download_start);
     this.$root.$on("download_complete", this.download_complete);
+    this.$root.$on("saveOption", this.saveOption);
 
     common.applyLoc();
 
     this.download_tip = common.lang["下载"];
     this.label_Dir = common.lang["游戏所在目录"];
-    this.label_Username = common.lang["用户名"];
-    this.label_Password = common.lang["密码"];
     this.label_btnSave = common.lang["保存"];
     this.label_btnReset = common.lang["重置"];
     this.label_ok = common.lang["确定"];
