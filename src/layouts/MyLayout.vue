@@ -34,11 +34,15 @@
         icon="settings"
         @click="option"
       >
-        <q-tooltip content-style="font-size: 12px">设置</q-tooltip>
+        <q-tooltip content-style="font-size: 12px">{{
+          label_Option
+        }}</q-tooltip>
       </q-btn>
 
       <q-btn dense flat color="black" icon="minimize" @click="minimize">
-        <q-tooltip content-style="font-size: 12px">最小化</q-tooltip>
+        <q-tooltip content-style="font-size: 12px">{{
+          label_Minimize
+        }}</q-tooltip>
       </q-btn>
 
       <!-- <q-btn dense flat color="black" icon="crop_square" @click="maximize">
@@ -46,7 +50,7 @@
       </q-btn>-->
 
       <q-btn dense flat color="black" icon="close" @click="close">
-        <q-tooltip content-style="font-size: 12px">关闭</q-tooltip>
+        <q-tooltip content-style="font-size: 12px">{{ label_Close }}</q-tooltip>
       </q-btn>
     </q-toolbar>
 
@@ -61,29 +65,34 @@
             <q-input
               standout="bg-primary text-white"
               v-model="dir"
-              label="游戏所在的目录"
+              :label="label_Dir"
             />
 
             <q-input
               standout="bg-primary text-white"
               v-model="user"
-              label="用户名"
+              :label="label_Username"
             />
 
             <q-input
               standout="bg-primary text-white"
               v-model="pwd"
-              label="密码"
+              :label="label_Password"
             />
 
-            <q-toggle v-model="autologin" label="自动登录" />
-            <q-toggle v-model="remember" label="保存密码" />
+            <q-toggle v-model="autologin" :label="label_AutoLogin" />
+            <q-toggle v-model="remember" :label="label_Remember" />
 
             <div class="text-center">
-              <q-btn class="fit" label="保存" color="primary" @click="onSave" />
               <q-btn
                 class="fit"
-                label="重置"
+                :label="label_btnSave"
+                color="primary"
+                @click="onSave"
+              />
+              <q-btn
+                class="fit"
+                :label="label_btnReset"
                 color="primary"
                 flat
                 @click="onReset"
@@ -103,7 +112,7 @@
         <q-card-section>{{ dlg_alertInfo }}</q-card-section>
 
         <q-card-actions align="right">
-          <q-btn flat label="确定" color="primary" v-close-popup />
+          <q-btn flat :label="label_ok" color="primary" v-close-popup />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -158,7 +167,17 @@ export default {
       version: "0.0.0",
       dir: "",
       launcher: "",
-      lang: ""
+      label_Dir: "",
+      label_Username: "",
+      label_Password: "",
+      label_btnSave: "",
+      label_btnReset: "",
+      label_ok: "",
+      label_Remember: "",
+      label_AutoLogin: "",
+      label_Option: "",
+      label_Minimize: "",
+      label_Close: ""
     };
   },
 
@@ -211,22 +230,22 @@ export default {
 
     onSave() {
       if (!this.dir || this.dir == "") {
-        this.$q.notify(lang["请先设置游戏所在的目录"]);
+        this.$q.notify(common.lang["请先设置游戏所在的目录"]);
         return;
       }
 
       if (this.remember && !this.user && this.user == "") {
-        this.$q.notify(lang["请输入用户名"]);
+        this.$q.notify(common.lang["请输入用户名"]);
         return;
       }
 
       if (this.remember && !this.pwd && this.pwd == "") {
-        this.$q.notify(lang["请输入密码"]);
+        this.$q.notify(common.lang["请输入密码"]);
         return;
       }
 
       this.$q.loading.show({
-        message: "<b>" + lang["正在保存设置..."] + "</b>"
+        message: "<b>" + common.lang["正在保存设置..."] + "</b>"
       });
 
       let timer = window.setTimeout(() => {
@@ -277,21 +296,21 @@ export default {
     },
 
     download_start(arg) {
-      this.download_tip = lang["正在下载: "] + arg;
+      this.download_tip = common.lang["正在下载: "] + arg;
       this.show_download = true;
 
       self.setInterval(() => {
-        this.download_tip = lang["下载"];
+        this.download_tip = common.lang["下载"];
         this.show_download = false;
       }, 3000);
     },
 
     download_complete(arg) {
-      this.download_tip = lang["下载完毕: "] + arg;
+      this.download_tip = common.lang["下载完毕: "] + arg;
       this.show_download = true;
 
       self.setInterval(() => {
-        this.download_tip = lang["下载"];
+        this.download_tip = common.lang["下载"];
         this.show_download = false;
       }, 3000);
     }
@@ -304,7 +323,7 @@ export default {
     if (this.appurl != "index")
       this.$router.push("window" + window.location.search);
 
-    json = common.GetJson("config.json");
+    let json = common.GetJson("config.json");
     this.user = base64.Base64.decode(json.user);
     this.pwd = base64.Base64.decode(json.pwd);
     this.autostart = common.CheckAutoStart();
@@ -320,12 +339,20 @@ export default {
     this.$root.$on("download_start", this.download_start);
     this.$root.$on("download_complete", this.download_complete);
 
-    json = common.GetJson("../../lang.json");
-    for (let index = 0; index < json.lang.length; index++) {
-      if (json.lang[index].default) lang = json.lang[index];
-    }
+    common.applyLoc();
 
-    this.download_tip = lang["下载"];
+    this.download_tip = common.lang["下载"];
+    this.label_Dir = common.lang["游戏所在目录"];
+    this.label_Username = common.lang["用户名"];
+    this.label_Password = common.lang["密码"];
+    this.label_btnSave = common.lang["保存"];
+    this.label_btnReset = common.lang["重置"];
+    this.label_ok = common.lang["确定"];
+    this.label_Remember = common.lang["保存密码"];
+    this.label_AutoLogin = common.lang["自动登录"];
+    this.label_Option = common.lang["设置"];
+    this.label_Minimize = common.lang["最小化"];
+    this.label_Close = common.lang["关闭"];
   },
 
   destroyed() {

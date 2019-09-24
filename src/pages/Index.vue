@@ -75,7 +75,7 @@
                       <q-input
                         standout="bg-teal text-white"
                         v-model="user"
-                        :label=label_Username
+                        :label="label_Username"
                         dark
                         bg-color="black"
                         style="opacity: 0.5"
@@ -83,7 +83,7 @@
                       <q-input
                         standout="bg-teal text-white"
                         v-model="pwd"
-                        :label=label_Password
+                        :label="label_Password"
                         dark
                         bg-color="black"
                         style="opacity: 0.5"
@@ -92,17 +92,17 @@
                       <q-toggle
                         class="text-white"
                         v-model="remember"
-                        :label=label_Remember
+                        :label="label_Remember"
                       />
                       <q-toggle
                         class="text-white"
                         v-model="autologin"
-                        :label=label_AutoLogin
+                        :label="label_AutoLogin"
                       />
 
                       <div class="text-center">
                         <q-btn
-                          :label=label_Login
+                          :label="label_Login"
                           color="primary"
                           style="width: 50%"
                           @click="onLogin"
@@ -151,7 +151,7 @@ export default {
       label_Password: "",
       label_Remember: "",
       label_AutoLogin: "",
-      label_Login: "",
+      label_Login: ""
     };
   },
 
@@ -170,7 +170,7 @@ export default {
       let json = common.GetJson("config.json");
       this.dir = json.dir;
       if (!this.dir || this.dir == "") {
-        this.$q.notify("请先设置游戏所在的目录");
+        this.$q.notify(common.lang["请先设置游戏所在的目录"]);
         return;
       }
 
@@ -180,22 +180,22 @@ export default {
       }
 
       if (!this.user || this.user == "") {
-        this.$q.notify("请输入用户名");
+        this.$q.notify(common.lang["请输入用户名"]);
         return;
       }
 
       if (!this.pwd || this.pwd == "") {
-        this.$q.notify("请输入密码");
+        this.$q.notify(common.lang["请输入密码"]);
         return;
       }
 
       this.$q.loading.show({
-        message: "<b>正在登陆游戏...</b>"
+        message: "<b>" + common.lang["正在登录游戏..."] + "</b>"
       });
 
       let timer = window.setTimeout(() => {
         this.$q.loading.hide();
-        this.$q.notify("启动游戏失败");
+        this.$q.notify(common.lang["启动游戏失败"]);
       }, 180000);
 
       common.SaveJson(
@@ -225,39 +225,37 @@ export default {
       window.close();
     },
 
-    readRemote(json) {
-      if (json) {
-        this.update = json.update;
-        this.server = json.server;
-
-        json.news.forEach(item => {
-          this.news.push({
-            title: item.title,
-            icon: item.icon,
-            href: item.href
-          });
-        });
-
-        json.banner.forEach(item => {
-          this.banner.push({
-            title: item.title,
-            img: item.img,
-            href: item.href
-          });
-        });
-      } else {
+    readRemote(data) {
+      let json;
+      try {
+        json = JSON.parse(data.toString());
+      } catch (e) {
         this.news.push({
-          title: "连接服务器失败",
+          title: common.lang["连接服务器失败"],
           icon: "",
           href: window.location.origin + "/404"
         });
-
-        this.banner.push({
-          title: "连接服务器失败",
-          img: "",
-          href: window.location.origin + "/404"
-        });
+        return;
       }
+
+      this.update = json.update;
+      this.server = json.server;
+
+      json.news.forEach(item => {
+        this.news.push({
+          title: item.title,
+          icon: item.icon,
+          href: item.href
+        });
+      });
+
+      json.banner.forEach(item => {
+        this.banner.push({
+          title: item.title,
+          img: item.img,
+          href: item.href
+        });
+      });
     }
   },
 
@@ -275,33 +273,28 @@ export default {
     common.applyLoc();
 
     this.label_Username = common.lang["用户名"];
-    this.label_Username = common.lang["用户名"];
-    this.label_Username = common.lang["用户名"];
-    this.label_Username = common.lang["用户名"];
-
+    this.label_Password = common.lang["密码"];
+    this.label_Remember = common.lang["保存密码"];
+    this.label_AutoLogin = common.lang["自动登录"];
+    this.label_Login = common.lang["登录"];
   },
 
   mounted() {
     this.onResize();
 
-    let json = common.GetJson("config.json");
     common.RequestURL(this.launcher, "", "", "GET", (status, data) => {
       if (status == "success") {
-        json = JSON.parse(data.toString());
-        this.readRemote(json);
+        this.readRemote(data);
       } else {
         common.RequestURL(this.launcher, "", "", "GET", (status, data) => {
           if (status == "success") {
-            json = JSON.parse(data.toString());
-            this.readRemote(json);
+            this.readRemote(data);
           } else {
             common.RequestURL(this.launcher, "", "", "GET", (status, data) => {
               if (status == "success") {
-                json = JSON.parse(data.toString());
-                this.readRemote(json);
+                this.readRemote(data);
               } else {
-                json = JSON.parse(data.toString());
-                this.readRemote(json);
+                this.readRemote(data);
               }
             });
           }

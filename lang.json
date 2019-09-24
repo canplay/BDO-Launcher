@@ -1,7 +1,7 @@
 {
     "lang": [
         {
-            "default": true,
+            "default": false,
             "剪切": "剪切",
             "复制": "复制",
             "粘贴": "粘贴",
@@ -14,19 +14,49 @@
             "下载": "下载",
             "正在下载: ": "正在下载: ",
             "下载完毕: ": "下载完毕: ",
-            "用户名: ": "用户名",
+            "用户名": "用户名",
             "密码": "密码",
             "保存密码": "保存密码",
             "自动登录": "自动登录",
-            "登录": "登录"
+            "登录": "登录",
+            "确定": "确定",
+            "重置": "重置",
+            "游戏所在目录": "游戏所在目录",
+            "正在登录游戏...": "正在登录游戏...",
+            "启动游戏失败": "启动游戏失败",
+            "连接服务器失败": "连接服务器失败",
+            "设置": "设置",
+            "最小化": "最小化",
+            "关闭": "关闭"
         },
         {
-            "default": false,
+            "default": true,
             "剪切": "Cut",
             "复制": "Copy",
             "粘贴": "Past",
             "保存": "Save",
-            "退出": "Exit"
+            "退出": "Exit",
+            "请先设置游戏所在的目录": "Please first set the directory where the game is located",
+            "请输入用户名": "Please enter username",
+            "请输入密码": "Please enter password",
+            "正在保存设置...": "Saving Settings...",
+            "下载": "Downloads",
+            "正在下载: ": "Downloading: ",
+            "下载完毕: ": "Download completes: ",
+            "用户名": "Username",
+            "密码": "Password",
+            "保存密码": "Keep Password",
+            "自动登录": "Auto Login",
+            "登录": "Login",
+            "确定": "Ok",
+            "重置": "Reset",
+            "游戏所在目录": "Game directory",
+            "正在登录游戏...": "Logging into the game...",
+            "启动游戏失败": "Startup game failed",
+            "连接服务器失败": "Connection to server failed",
+            "设置": "Option",
+            "最小化": "Minimize",
+            "关闭": "Close"
         }
     ]
 }

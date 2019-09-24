@@ -10,7 +10,7 @@ export default {
   data() {
     return {
       lang: ""
-    }
+    };
   },
 
   uuid() {
@@ -134,7 +134,10 @@ export default {
   applyLoc() {
     let json = this.GetJson("lang.json");
     for (let index = 0; index < json.lang.length; index++) {
-      if (json.lang[index].default) this.lang = json.lang[index];
+      if (json.lang[index].default) {
+        this.lang = json.lang[index];
+        break;
+      }
     }
   },
 
