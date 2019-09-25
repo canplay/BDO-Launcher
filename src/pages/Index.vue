@@ -185,7 +185,13 @@
             <!-- <q-img :src="img_Captcha" style="width: 100%; height: 50px" /> -->
 
             <div>
-              <q-btn class="fit" color="primary" :label="label_Register" @click="onRegister"/>
+              <q-btn
+                class="fit"
+                color="primary"
+                :label="label_Register"
+                @click="onRegister"
+                :disable="btnRegister"
+              />
             </div>
           </div>
         </q-card-section>
@@ -234,7 +240,9 @@ export default {
       register_Username: "",
       register_Password: "",
       register_Captcha: "",
-      img_Captcha: ""
+      img_Captcha: "",
+      serverId: "",
+      btnRegister: false
     };
   },
 
@@ -302,6 +310,10 @@ export default {
     },
 
     onShowRegister() {
+      this.register_Username = "";
+      this.register_Password = "";
+      this.register_Captcha = "";
+
       this.dlg_register = true;
 
       common.RequestURL(
@@ -311,9 +323,10 @@ export default {
         "GET",
         (status, data) => {
           if (status == "success") {
-            this.img_Captcha = data;
-          }
-          else {
+            let json = JSON.parse(data);
+            this.serverId = json.id;
+            this.img_Captcha = json.captcha;
+          } else {
             this.$q.notify(common.lang["验证码加载失败，请重新打开注册窗口"]);
           }
         }
@@ -336,19 +349,49 @@ export default {
         return;
       }
 
+      let regex = /^[0-9a-zA-Z]+$/;
+      if (!regex.test(this.register_Username) || !regex.test(this.register_Password)) {
+        this.$q.notify(common.lang["用户名或密码只能是字母和数字"]);
+        return;
+      }
+
+      this.btnRegister = true;
+
       common.RequestURL(
-        this.launcher + "register",
-        {
-          username: this.register_Username,
-          password: this.register_Password,
-          captcha: this.register_Captcha
-        },
+        this.launcher +
+          "register/" +
+          this.serverId +
+          "/" +
+          this.register_Captcha +
+          "/" +
+          this.register_Username +
+          "/" +
+          this.register_Password,
+        "",
         "",
         "GET",
         (status, data) => {
           if (status == "success") {
-            console.log(data);
+            switch (data) {
+              case "id error":
+                this.$q.notify(common.lang["注册超时，请重新打开注册窗口"]);
+                break;
+              case "captcha error":
+                this.$q.notify(common.lang["验证码错误，请重新填写"]);
+                break;
+              case "username exist":
+                this.$q.notify(common.lang["账号已存在，请重新填写"]);
+                break;
+              case "success":
+                this.$q.notify(common.lang["成功！"]);
+                break;
+              default:
+                this.$q.notify(common.lang["创建失败"]);
+                break;
+            }
           }
+
+          this.btnRegister = false;
         }
       );
     },

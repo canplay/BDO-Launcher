@@ -36,7 +36,12 @@
             "注册": "注册",
             "请输入左边显示的验证码": "请输入左边显示的验证码",
             "验证码加载失败，请重新打开注册窗口": "验证码加载失败，请重新打开注册窗口",
-            "请输入验证码": "请输入验证码"
+            "请输入验证码": "请输入验证码",
+            "用户名或密码只能是字母和数字": "用户名或密码只能是字母和数字",
+            "验证码错误，请重新填写": "验证码错误，请重新填写",
+            "注册超时，请重新打开注册窗口": "注册超时，请重新打开注册窗口",
+            "账号已存在，请重新填写": "账号已存在，请重新填写",
+            "注册成功！": "注册成功！"
         },
         {
             "default": true,
@@ -74,7 +79,12 @@
             "注册": "Register",
             "请输入左边显示的验证码": "Please enter the captcha shown on the left",
             "验证码加载失败，请重新打开注册窗口": "The captcha failed to load. Please reopen the register window",
-            "请输入验证码": "Please enter captcha"
+            "请输入验证码": "Please enter captcha",
+            "用户名或密码只能是字母和数字": "Usernames or Passwords can only be letters and numbers",
+            "验证码错误，请重新填写": "Captcha error, please fill in again",
+            "注册超时，请重新打开注册窗口": "Register timeout, please reopen the registration window",
+            "账号已存在，请重新填写": "The account already exists, please fill in again",
+            "注册成功！": "Registered successfully!"
         }
     ]
 }
