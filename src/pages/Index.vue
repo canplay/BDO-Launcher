@@ -119,14 +119,26 @@
                         :label="label_AutoLogin"
                       />
 
-                      <div class="text-center">
-                        <q-btn
-                          :label="label_Login"
-                          color="primary"
-                          style="width: 50%"
-                          @click="onLogin"
-                          ref="btnLogin"
-                        />
+                      <div class="row">
+                        <div class="col">
+                          <q-btn
+                            :label="label_Login"
+                            color="primary"
+                            class="fit"
+                            @click="onLogin"
+                          />
+                        </div>
+
+                        <div class="col-1" />
+
+                        <div class="col">
+                          <q-btn
+                            :label="label_Register"
+                            color="secondary"
+                            class="fit"
+                            @click="onShowRegister"
+                          />
+                        </div>
                       </div>
                     </div>
                   </q-card-section>
@@ -139,6 +151,46 @@
         </div>
       </div>
     </div>
+
+    <q-dialog v-model="dlg_register">
+      <q-card style="width: 500px">
+        <q-card-section class="fit items-center">
+          <div class="q-gutter-md">
+            <q-input
+              standout="bg-primary text-white"
+              v-model="register_Username"
+              :label="label_Username"
+            />
+
+            <q-input
+              standout="bg-primary text-white"
+              v-model="register_Password"
+              :label="label_Password"
+            />
+
+            <div class="row">
+              <div class="col-2 relative-position">
+                <div class="absolute-center text-h4">{{ img_Captcha }}</div>
+              </div>
+              <div class="col-1" />
+              <div class="col">
+                <q-input
+                  standout="bg-primary text-white"
+                  v-model="register_Captcha"
+                  :label="label_Captcha"
+                />
+              </div>
+            </div>
+
+            <!-- <q-img :src="img_Captcha" style="width: 100%; height: 50px" /> -->
+
+            <div>
+              <q-btn class="fit" color="primary" :label="label_Register" @click="onRegister"/>
+            </div>
+          </div>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -175,7 +227,14 @@ export default {
       label_Remember: "",
       label_AutoLogin: "",
       label_Login: "",
-      label_Status: ""
+      label_Register: "",
+      label_Status: "",
+      label_Captcha: "",
+      dlg_register: false,
+      register_Username: "",
+      register_Password: "",
+      register_Captcha: "",
+      img_Captcha: ""
     };
   },
 
@@ -242,36 +301,99 @@ export default {
       });
     },
 
-    readRemote(data) {
-      let json;
-      try {
-        json = JSON.parse(data.toString());
-      } catch (e) {
-        this.label_Status = common.lang["连接服务器失败"];
+    onShowRegister() {
+      this.dlg_register = true;
+
+      common.RequestURL(
+        this.launcher + "captcha",
+        "",
+        "",
+        "GET",
+        (status, data) => {
+          if (status == "success") {
+            this.img_Captcha = data;
+          }
+          else {
+            this.$q.notify(common.lang["验证码加载失败，请重新打开注册窗口"]);
+          }
+        }
+      );
+    },
+
+    onRegister() {
+      if (!this.register_Username || this.register_Username == "") {
+        this.$q.notify(common.lang["请输入用户名"]);
         return;
       }
 
-      this.update = json.update;
-      this.remoteVersion = json.version;
-      this.server = json.server;
+      if (!this.register_Password || this.register_Password == "") {
+        this.$q.notify(common.lang["请输入密码"]);
+        return;
+      }
 
-      json.news.forEach(item => {
-        this.news.push({
-          title: item.title,
-          icon: item.icon,
-          href: item.href
-        });
+      if (!this.register_Captcha || this.register_Captcha == "") {
+        this.$q.notify(common.lang["请输入验证码"]);
+        return;
+      }
+
+      common.RequestURL(
+        this.launcher + "register",
+        {
+          username: this.register_Username,
+          password: this.register_Password,
+          captcha: this.register_Captcha
+        },
+        "",
+        "GET",
+        (status, data) => {
+          if (status == "success") {
+            console.log(data);
+          }
+        }
+      );
+    },
+
+    request() {
+      let json;
+
+      common.RequestURL(this.launcher, "", "", "GET", (status, data) => {
+        if (status == "success") {
+          try {
+            json = JSON.parse(data.toString());
+          } catch (e) {
+            this.label_Status = common.lang["连接服务器失败"];
+            return;
+          }
+
+          this.update = json.update;
+          this.remoteVersion = json.version;
+          this.server = json.server;
+
+          try {
+            json.news.forEach(item => {
+              this.news.push({
+                title: item.title,
+                icon: item.icon,
+                href: item.href
+              });
+            });
+
+            json.banner.forEach(item => {
+              this.banner.push({
+                title: item.title,
+                img: item.img,
+                href: item.href
+              });
+            });
+
+            this.checkUpdate();
+          } catch (e) {
+            this.label_Status = common.lang["连接服务器失败"];
+          }
+        } else {
+          this.request();
+        }
       });
-
-      json.banner.forEach(item => {
-        this.banner.push({
-          title: item.title,
-          img: item.img,
-          href: item.href
-        });
-      });
-
-      this.checkUpdate();
     },
 
     checkUpdate() {
@@ -347,30 +469,14 @@ export default {
     this.label_Remember = common.lang["保存密码"];
     this.label_AutoLogin = common.lang["自动登录"];
     this.label_Login = common.lang["登录"];
+    this.label_Register = common.lang["注册"];
+    this.label_Captcha = common.lang["请输入左边显示的验证码"];
   },
 
   mounted() {
     this.onResize();
 
-    common.RequestURL(this.launcher, "", "", "GET", (status, data) => {
-      if (status == "success") {
-        this.readRemote(data);
-      } else {
-        common.RequestURL(this.launcher, "", "", "GET", (status, data) => {
-          if (status == "success") {
-            this.readRemote(data);
-          } else {
-            common.RequestURL(this.launcher, "", "", "GET", (status, data) => {
-              if (status == "success") {
-                this.readRemote(data);
-              } else {
-                this.readRemote(data);
-              }
-            });
-          }
-        });
-      }
-    });
+    this.request();
 
     if (this.autologin) {
       if (!this.logined) this.login();

@@ -32,7 +32,11 @@
             "正在检查更新...": "正在检查更新...",
             "正在更新...": "正在更新...",
             "已是最新": "已是最新",
-            "检查更新失败": "检查更新失败"
+            "检查更新失败": "检查更新失败",
+            "注册": "注册",
+            "请输入左边显示的验证码": "请输入左边显示的验证码",
+            "验证码加载失败，请重新打开注册窗口": "验证码加载失败，请重新打开注册窗口",
+            "请输入验证码": "请输入验证码"
         },
         {
             "default": true,
@@ -66,7 +70,11 @@
             "正在检查更新...": "Checking for updates...",
             "正在更新...": "Updating...",
             "已是最新": "Latest",
-            "检查更新失败": "Check update failed"
+            "检查更新失败": "Check update failed",
+            "注册": "Register",
+            "请输入左边显示的验证码": "Please enter the captcha shown on the left",
+            "验证码加载失败，请重新打开注册窗口": "The captcha failed to load. Please reopen the register window",
+            "请输入验证码": "Please enter captcha"
         }
     ]
 }

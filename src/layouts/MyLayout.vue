@@ -58,9 +58,9 @@
       <router-view ref="container" />
     </q-page-container>
 
-    <q-dialog v-model="dlg_option" style="width: 300px">
-      <q-card>
-        <q-card-section class="row items-center">
+    <q-dialog v-model="dlg_option">
+      <q-card style="width: 600px">
+        <q-card-section class="fit items-center">
           <div class="q-gutter-md">
             <q-input
               standout="bg-primary text-white"
@@ -69,20 +69,27 @@
               @click="showFileDlg"
             />
 
-            <div class="text-center">
-              <q-btn
-                class="fit"
-                :label="label_btnSave"
-                color="primary"
-                @click="onSave"
-              />
-              <q-btn
-                class="fit"
-                :label="label_btnReset"
-                color="primary"
-                flat
-                @click="onReset"
-              />
+            <div class="row">
+              <div class="col">
+                <q-btn
+                  class="fit"
+                  :label="label_btnSave"
+                  color="primary"
+                  @click="onSave"
+                />
+              </div>
+
+              <div class="col-1" />
+
+              <div class="col">
+                <q-btn
+                  class="fit"
+                  :label="label_btnReset"
+                  color="primary"
+                  flat
+                  @click="onReset"
+                />
+              </div>
             </div>
           </div>
         </q-card-section>
