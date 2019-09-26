@@ -6,5 +6,5 @@
     "remember": false,
     "version": "1.0.2",
     "dir": "",
-    "launcher": "http://127.0.0.1/launcher.json"
+    "launcher": "http://127.0.0.1:3000/"
 }

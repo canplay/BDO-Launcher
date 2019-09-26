@@ -350,7 +350,10 @@ export default {
       }
 
       let regex = /^[0-9a-zA-Z]+$/;
-      if (!regex.test(this.register_Username) || !regex.test(this.register_Password)) {
+      if (
+        !regex.test(this.register_Username) ||
+        !regex.test(this.register_Password)
+      ) {
         this.$q.notify(common.lang["用户名或密码只能是字母和数字"]);
         return;
       }
