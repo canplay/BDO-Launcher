@@ -1,6 +1,10 @@
 <template>
   <q-layout>
-    <q-img src="statics/bg.png" class="fixed-center fit" style="z-index: -1; border-radius: 8px" />
+    <q-img
+      src="statics/bg.png"
+      class="fixed-center fit"
+      style="z-index: -1; border-radius: 8px"
+    />
 
     <q-toolbar class="text-white q-electron-drag transprent">
       <q-img

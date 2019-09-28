@@ -1,7 +1,7 @@
 {
     "lang": [
         {
-            "default": false,
+            "default": true,
             "剪切": "剪切",
             "复制": "复制",
             "粘贴": "粘贴",
@@ -41,10 +41,16 @@
             "验证码错误，请重新填写": "验证码错误，请重新填写",
             "注册超时，请重新打开注册窗口": "注册超时，请重新打开注册窗口",
             "账号已存在，请重新填写": "账号已存在，请重新填写",
-            "注册成功！": "注册成功！"
+            "注册成功！": "注册成功！",
+            "注册失败！": "注册失败！",
+            "用户名不能小于3个字": "用户名不能小于3个字",
+            "密码不能小于6个字": "密码不能小于6个字",
+            "用户名错误，请重新填写": "用户名错误，请重新填写",
+            "密码错误，请重新填写": "密码错误，请重新填写",
+            "登录失败！": "登录失败！"
         },
         {
-            "default": true,
+            "default": false,
             "剪切": "Cut",
             "复制": "Copy",
             "粘贴": "Past",
@@ -84,7 +90,13 @@
             "验证码错误，请重新填写": "Captcha error, please fill in again",
             "注册超时，请重新打开注册窗口": "Register timeout, please reopen the registration window",
             "账号已存在，请重新填写": "The account already exists, please fill in again",
-            "注册成功！": "Registered successfully!"
+            "注册成功！": "Registered successfully!",
+            "注册失败！": "Registered failed!",
+            "用户名不能小于3个字": "Username cannot be less than 3 words",
+            "密码不能小于6个字": "Password cannot be less than 6 words",
+            "用户名错误，请重新填写": "Username is wrong, please fill in again",
+            "密码错误，请重新填写": "Password error, please fill in again",
+            "登录失败！": "Login failed!"
         }
     ]
 }

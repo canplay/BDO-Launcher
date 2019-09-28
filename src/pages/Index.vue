@@ -190,7 +190,6 @@
                 color="primary"
                 :label="label_Register"
                 @click="onRegister"
-                :disable="btnRegister"
               />
             </div>
           </div>
@@ -241,8 +240,7 @@ export default {
       register_Password: "",
       register_Captcha: "",
       img_Captcha: "",
-      serverId: "",
-      btnRegister: false
+      serverId: ""
     };
   },
 
@@ -280,7 +278,7 @@ export default {
         return;
       }
 
-      // this.label_Status = common.lang["正在登录游戏..."];
+      this.label_Status = common.lang["正在登录游戏..."];
 
       this.$q.loading.show();
 
@@ -298,15 +296,48 @@ export default {
         this.remember ? true : false
       );
 
-      common.RunGame(this.dir, this.server, this.user, this.pwd, code => {
-        if (code) {
-          window.close();
-        } else {
-          this.label_Status = common.lang["启动游戏失败"];
-          this.$q.loading.hide();
-          window.clearTimeout(timer);
+      common.RequestURL(
+        this.launcher +
+          "login/" +
+          this.user +
+          "/" +
+          this.pwd,
+        "",
+        "",
+        "GET",
+        (status, data) => {
+          if (status == "success") {
+            switch (data) {
+              case "username error":
+                this.$q.loading.hide();
+                window.clearTimeout(timer);
+                this.$q.notify(common.lang["用户名错误，请重新填写"]);
+                break;
+              case "password error":
+                this.$q.loading.hide();
+                window.clearTimeout(timer);
+                this.$q.notify(common.lang["密码错误，请重新填写"]);
+                break;
+              case "success":
+                common.RunGame(this.dir, this.server, this.user, this.pwd, code => {
+                  if (code) {
+                    window.close();
+                  } else {
+                    this.$q.loading.hide();
+                    window.clearTimeout(timer);
+                    this.label_Status = common.lang["启动游戏失败"];
+                  }
+                });
+                break;
+              default:
+                this.$q.loading.hide();
+                window.clearTimeout(timer);
+                this.$q.notify(common.lang["登录失败！"]);
+                break;
+            }
+          }
         }
-      });
+      );
     },
 
     onShowRegister() {
@@ -339,8 +370,18 @@ export default {
         return;
       }
 
+      if (this.register_Username.length < 3) {
+        this.$q.notify(common.lang["用户名不能小于3个字"]);
+        return;
+      }
+
       if (!this.register_Password || this.register_Password == "") {
         this.$q.notify(common.lang["请输入密码"]);
+        return;
+      }
+
+      if (this.register_Password.length < 6) {
+        this.$q.notify(common.lang["密码不能小于6个字"]);
         return;
       }
 
@@ -358,7 +399,13 @@ export default {
         return;
       }
 
-      this.btnRegister = true;
+      this.$q.loading.show();
+
+      let timer = window.setTimeout(() => {
+        this.$q.loading.hide();
+        this.label_Status = common.lang["启动游戏失败"];
+        window.clearTimeout(timer);
+      }, 180000);
 
       common.RequestURL(
         this.launcher +
@@ -377,24 +424,32 @@ export default {
           if (status == "success") {
             switch (data) {
               case "id error":
+                this.$q.loading.hide();
+                window.clearTimeout(timer);
                 this.$q.notify(common.lang["注册超时，请重新打开注册窗口"]);
                 break;
               case "captcha error":
+                this.$q.loading.hide();
+                window.clearTimeout(timer);
                 this.$q.notify(common.lang["验证码错误，请重新填写"]);
                 break;
               case "username exist":
+                this.$q.loading.hide();
+                window.clearTimeout(timer);
                 this.$q.notify(common.lang["账号已存在，请重新填写"]);
                 break;
               case "success":
-                this.$q.notify(common.lang["成功！"]);
+                this.$q.loading.hide();
+                window.clearTimeout(timer);
+                this.$q.notify(common.lang["注册成功！"]);
                 break;
               default:
-                this.$q.notify(common.lang["创建失败"]);
+                this.$q.loading.hide();
+                window.clearTimeout(timer);
+                this.$q.notify(common.lang["注册失败！"]);
                 break;
             }
           }
-
-          this.btnRegister = false;
         }
       );
     },
